@@ -1,3 +1,4 @@
 *.c
 test.scm
 bin/
+*.so
