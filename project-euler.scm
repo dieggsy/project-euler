@@ -114,9 +114,6 @@
     (let ((p (car v)))
       (if (> (* p p) n)
           (let rev-append ((u u) (v v))
-            (print "REV-APPEND")
-            (print u)
-            (print v "\n")
             (if (null? u)
                 v
                 (rev-append (cdr u) (cons (car u) v))))
