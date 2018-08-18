@@ -1,0 +1,1169 @@
+#+title: Project Euler in Racket
+#+todo: TODO SLOW | DONE
+#+property: header-args :results output :session
+
+* preamble
+#+begin_src scheme :results silent
+(require racket/format
+         (rename-in math/number-theory [permutations choose])
+         math/array
+         math/matrix
+         racket/string
+         srfi/13)
+#+end_src
+* p01
+#+begin_src scheme
+(define (p01)
+  (let loop ((i 3))
+    (if (= i 1000)
+        0
+        (+ (if (or (= (modulo i 3) 0) (= (modulo i 5) 0))
+               i
+               0)
+           (loop (+ i 1))))))
+
+(time (writeln (p01)))
+#+end_src
+
+#+RESULTS:
+: 233168
+: cpu time: 1 real time: 0 gc time: 0
+
+* p02
+#+begin_src scheme
+(define (p02)
+  (let loop ((num1 1)
+             (num2 2))
+    (let ((addnum (if (and (even? num2)
+                           (not (> num2 4000000)))
+                      num2
+                      0)))
+      (if (>= num2 4000000)
+          addnum
+          (+ addnum (loop num2
+                          (+ num1 num2)))))))
+
+(time (writeln (p02)))
+#+end_src
+
+#+RESULTS:
+: 4613732
+: cpu time: 1 real time: 0 gc time: 0
+
+* p03
+#+begin_src scheme
+(define (p03)
+  (apply max (prime-divisors 600851475143)))
+
+(time (writeln (p03)))
+#+end_src
+
+#+RESULTS:
+: 6857
+: cpu time: 96 real time: 95 gc time: 27
+
+* p04
+#+begin_src scheme
+(define (p04)
+  (let loop ((num1 999)
+             (num2 999)
+             (biggest 0))
+    (let* ((prod (* num1 num2))
+           (prodstr (number->string prod))
+           (prodlst (string->list prodstr)))
+      (cond
+       ;; Done looking
+       ((and (= num1 100) (= num2 100))
+        biggest)
+       ;; Found a bigger palindrome
+       ((and (equal? prodlst
+                     (reverse prodlst))
+             (> prod biggest))
+        (loop num1 (- num2 1) prod))
+       ;; Num2 hasn't run out in this pass
+       ((> num2 100)
+        (loop num1 (- num2 1) biggest))
+       ;; Start again, bump both down
+       (else (loop (- num1 1) (- num1 1) biggest))))))
+(time (writeln (p04)))
+#+end_src
+
+#+RESULTS:
+: 906609
+: cpu time: 148 real time: 149 gc time: 3
+
+* p05
+#+begin_src scheme
+(define (p05)
+  (let loop ((lst (range 1 20)))
+    (if (= (length lst) 2)
+        (let ((one (car lst))
+              (two (cadr lst)))
+          (/ (* one two)
+             (gcd one two)))
+        (let ((one (car lst))
+              (two (loop (cdr lst))))
+          (/ (* one two)
+             (gcd one two))))))
+(time (writeln (p05)))
+#+end_src
+
+#+RESULTS:
+: 232792560
+: cpu time: 1 real time: 1 gc time: 0
+
+* p06
+#+begin_src scheme
+(define (p06)
+  (let ((sum-of-squares (apply + (map (lambda (x) (expt x 2)) (range 1 101))))
+        (square-of-sum (expt (apply + (range 1 101)) 2)))
+    (- square-of-sum sum-of-squares)))
+
+(time (writeln (p06)))
+#+end_src
+
+#+RESULTS:
+: 25164150
+: cpu time: 0 real time: 0 gc time: 0
+
+* p07
+#+begin_src scheme
+(define (p07)
+  (let loop ((n 1)
+             (x 2))
+    (if (= n 10001)
+        x
+        (loop (if (prime? (+ x 1)) (+ n 1) n) (+ x 1)))))
+
+(time (writeln (p07)))
+#+end_src
+
+#+RESULTS:
+: 104743
+: cpu time: 34 real time: 34 gc time: 0
+
+* p08
+#+begin_src scheme
+(define (p08)
+  (let ((numlist (map string->number
+                      (drop-right (string-split
+                                   (file->string "p08-string.txt")
+                                   #rx"(?<=.)(?=.)")
+                                  1))))
+    (let loop ((big 0)
+               (lst numlist))
+      (if (< (length lst) 13)
+          big
+          (loop (max big
+                     (apply * (take lst 13)))
+                (cdr lst))))))
+
+(time (writeln (p08)))
+#+end_src
+
+#+RESULTS:
+: 23514624000
+: cpu time: 4 real time: 5 gc time: 0
+
+* p09
+#+begin_src scheme
+(define (p09)
+  (let loop ((a 1)
+             (b 1))
+    (if (= 1000 (+ a b (sqrt (+ (expt a 2) (expt b 2)))))
+        (apply * (list a b (sqrt (+ (expt a 2) (expt b 2)))))
+        (cond ((= b 1000) (loop (+ a 1) 0))
+              (#t (loop a (+ b 1)))))))
+
+(time (writeln (p09)))
+#+end_src
+
+#+RESULTS:
+: 31875000
+: cpu time: 40 real time: 40 gc time: 0
+
+* p10
+#+begin_src scheme
+(define (p10)
+  (let loop ((i 2)
+             (sum 0))
+    (if (> i 1999999)
+        sum
+        (loop (next-prime i)
+              (+ sum i)))))
+
+(time (writeln (p10)))
+#+end_src
+
+#+RESULTS:
+: 142913828922
+: cpu time: 2771 real time: 2771 gc time: 200
+
+* p11
+#+begin_src scheme
+(define (p11)
+  (define (local-max m i j)
+    (let ((subm (submatrix m (:: i (+ i 4)) (:: j (+ j 4)))))
+      (max
+       (array-all-prod (matrix-row subm 0))
+       (array-all-prod (matrix-col subm 0))
+       (array-all-prod (matrix-diagonal subm))
+       (array-all-prod (matrix-diagonal (submatrix subm (::) (:: #f #f -1)))))))
+  (let* ((matrix
+          (list*->matrix
+           (map (lambda (line)
+                  (map string->number line))
+                (map string-split
+                     (string-split
+                      (file->string "p11-matrix.txt")
+                      "\n"))))))
+    (let loop ((i 0)
+               (j 0)
+               (mx 0))
+      (if (and (= i 16) (= j 16))
+          mx
+          (loop
+           (if (= j 16) (+ i 1) i)
+           (if (= j 16) 0 (+ j 1))
+           (max mx (local-max matrix i j)))))))
+
+(time (writeln (p11)))
+#+end_src
+
+#+RESULTS:
+: 70600674
+: cpu time: 90 real time: 90 gc time: 1
+
+* p12
+#+begin_src scheme
+(define (p12)
+  (let loop ((num 1)
+             (tri 1)
+             (num-factors 1))
+    (if (> num-factors 500)
+        tri
+        (let* ((next (+ num 1))
+               (tri-next (+ tri next))
+               (num-factors-next (length (divisors tri-next))))
+          (loop next tri-next (max num-factors num-factors-next))))))
+
+(time (writeln (p12)))
+#+end_src
+
+#+RESULTS:
+: 76576500
+: cpu time: 379 real time: 382 gc time: 1
+
+* p13
+#+begin_src scheme
+(define (p13)
+  (let* ((p13-string (file->string "p13-string.txt"))
+         (nums (map string->number (string-split p13-string "\n")))
+         (sumstr (number->string (apply + nums))))
+    (substring sumstr 0 10)))
+
+(time (writeln (p13)))
+#+end_src
+
+#+RESULTS:
+: "5537376230"
+: cpu time: 1 real time: 1 gc time: 0
+
+* p14
+#+begin_src scheme
+(define (p14)
+  (define (collatz x)
+    (cond ((= x 1)
+           '(1))
+          ((even? x)
+           (cons x (collatz (/ x 2))))
+          ((odd? x)
+           (cons x (collatz (+ 1 (* 3 x)))))))
+  (let loop ((i 999999)
+             (len (length (collatz 999999)))
+             (longest 999999))
+    (if (= i 1)
+        longest
+        (let* ((i (- i 1))
+               (collatz-len (length (collatz i)))
+               (next-len (if (> collatz-len len) collatz-len len))
+               (longest (if (> collatz-len len) i longest)))
+          (loop i next-len longest)))))
+
+(time (writeln (p14)))
+#+end_src
+
+#+RESULTS:
+: 837799
+: cpu time: 2841 real time: 2843 gc time: 9
+
+* TODO p15
+* p16
+#+begin_src scheme
+(define (p16)
+  (let* ((numstr (number->string (expt 2 1000)))
+         (strlst (string->list numstr))
+         (numlst (map (lambda (x) (string->number (string x)))
+                      strlst)))
+    (apply + numlst)))
+
+(time (writeln (p16)))
+#+end_src
+
+#+RESULTS:
+: 1366
+: cpu time: 0 real time: 1 gc time: 0
+* p17
+#+begin_src scheme
+(define (wordify-number num)
+  (let ((numstr (number->string num)))
+    (let loop ((numstr (string-reverse numstr))
+               (place 1))
+      (if (string-null? numstr)
+          ""
+          (let ((char (string-ref numstr 0))
+                ;; (char-2 (string-ref numstr 1))
+                )
+            (string-append
+             (loop (substring numstr 1) (* 10 place))
+             (cond ((and (= place 1)
+                         (> (string-length numstr) 1)
+                         (char=? (string-ref numstr 1) #\1))
+                    (cond ((char=? char #\0) "ten")
+                          ((char=? char #\1) "eleven")
+                          ((char=? char #\2) "twelve")
+                          ((char=? char #\3) "thirteen")
+                          ((char=? char #\4) "fourteen")
+                          ((char=? char #\5) "fifteen")
+                          ((char=? char #\6) "sixteen")
+                          ((char=? char #\7) "seventeen")
+                          ((char=? char #\8) "eighteen")
+                          ((char=? char #\9) "nineteen")))
+                   ((not (= place 10))
+                    (string-append
+                     (if (and (= place 1)
+                              (not (char=? char #\0))
+                              (> (string-length numstr) 2)
+                              (char=? (string-ref numstr 1) #\0))
+                         "and"
+                         "")
+                     (cond ((char=? char #\0) "")
+                           ((char=? char #\1) "one")
+                           ((char=? char #\2) "two")
+                           ((char=? char #\3) "three")
+                           ((char=? char #\4) "four")
+                           ((char=? char #\5) "five")
+                           ((char=? char #\6) "six")
+                           ((char=? char #\7) "seven")
+                           ((char=? char #\8) "eight")
+                           ((char=? char #\9) "nine"))))
+                   (else
+                    (string-append
+                     (if (and (> (string-length numstr) 1)
+                              (not (char=? char #\0)))
+                         "and"
+                         "")
+                     (cond ((char=? char #\0) "")
+                           ((char=? char #\1) "")
+                           ((char=? char #\2) "twenty")
+                           ((char=? char #\3) "thirty")
+                           ((char=? char #\4) "forty")
+                           ((char=? char #\5) "fifty")
+                           ((char=? char #\6) "sixty")
+                           ((char=? char #\7) "seventy")
+                           ((char=? char #\8) "eighty")
+                           ((char=? char #\9) "ninety")))))
+             (if (and (= place 100)
+                      (not (char=? char #\0)))
+                 "hundred"
+                 "")
+
+             (if (and (= place 1000)
+                      (not (char=? char #\0)))
+                 "thousand"
+                 "")
+             (if (and (= place 1000000)
+                      (not (char=? char #\0)))
+                 "million"
+                 "")))))))
+
+(define (p17)
+  (string-length (string-join (map wordify-number (range 1 1001)) "")))
+
+(time (writeln (p17)))
+#+end_src
+
+#+RESULTS:
+: 21124
+: cpu time: 1 real time: 1 gc time: 0
+* TODO p18
+* TODO p19
+* p20
+#+begin_src scheme
+(define (p20)
+  (define ! factorial)
+  (apply +
+         (map string->number
+              (map string
+                   (string->list
+                    (number->string (! 100)))))))
+
+(time (writeln (p20)))
+#+end_src
+
+#+RESULTS:
+: 648
+: cpu time: 1 real time: 0 gc time: 0
+* p21
+#+begin_src scheme
+(define (p21)
+  (define (d n)
+    (apply + (drop-right (divisors n) 1)))
+  (define (amicable? a)
+    (let ((b (d a)))
+      (if (= b a)
+          #f
+          (let ((other (d b)))
+            (if (= a other)
+                (list a b)
+                #f)))))
+  (let loop ((num 2)
+             (seen (set))
+             (sum 0))
+    (if (= num 10000)
+        sum
+        (let ((is-amicable (and (not (set-member? seen num))
+                                (amicable? num))))
+          (if is-amicable
+              (loop (+ num 1)
+                    (set-add (set-add seen (cadr is-amicable))
+                             (car is-amicable))
+                    (apply (curry + sum) is-amicable))
+              (loop (+ num 1)
+                    seen
+                    sum))))))
+
+(time (writeln (p21)))
+#+end_src
+
+#+RESULTS:
+: 31626
+: cpu time: 86 real time: 86 gc time: 0
+* TODO p22
+This is wrong ???
+#+begin_src scheme
+(define (p22)
+  (define (name-score name)
+    (apply + (map (lambda (x) (- x 64))
+                  (map char->integer (string->list name)))))
+  (let ((sorted-names
+         (sort
+          (string-split
+           (let ((str (file->string "p22-names.txt")))
+             (substring str 1 (string-length str))) "\",\"")
+          string<=?)))
+    (let loop ((names sorted-names)
+               (place 1))
+      (if (= (length names) 1)
+          (* (name-score (car names)) place)
+          (+ (* (name-score (car names)) place) (loop (cdr names) (+ place 1)))))))
+
+(time (writeln (p22)))
+#+end_src
+
+#+RESULTS:
+: 871193872
+: cpu time: 44 real time: 43 gc time: 0
+* TODO p23
+#+begin_src scheme
+
+
+(time (writeln (p23)))
+#+end_src
+
+#+RESULTS:
+: range-to: undefined;
+:  cannot reference undefined identifier
+:
+* TODO p24
+#+begin_src scheme
+
+#+end_src
+* p25
+#+begin_src scheme
+(define (p25)
+  (let loop ((n 3)
+             (i 1)
+             (j 1))
+    (let ((fib (+ i j)))
+      (if (= (string-length
+              (number->string fib))
+             1000)
+          n
+          (loop (+ n 1) j fib)))))
+(time (writeln (p25)))
+#+end_src
+
+#+RESULTS:
+: 4782
+: cpu time: 62 real time: 61 gc time: 0
+* TODO p26
+* p27
+#+begin_src scheme
+(define (p27)
+  (define (make-f a b)
+    (lambda (n)
+      (+ (expt n 2) (* a n) b)))
+  (define (get-consecutive-primes a b)
+    (let ((f (make-f a b)))
+      (let loop ((n 0)
+                 (primes 0))
+        (if (prime? (f n))
+            (loop (+ n 1) (+ primes 1))
+            primes))))
+  (let loop ((a 1000)
+             (b 1000)
+             (max-primes 0)
+             (prod 0))
+    ;; (print b)
+    ;; (print " ")
+    ;; (writeln a)
+    (cond ((= b -1001)
+           prod)
+          ((= a -1000)
+           (loop 1000 (- b 1) max-primes prod))
+          (else
+           (let ((numprimes (get-consecutive-primes a b)))
+             (if (> numprimes max-primes)
+                 (loop (- a 1) b numprimes (* a b))
+                 (loop (- a 1) b max-primes prod)))))))
+
+(time (writeln (p27)))
+#+end_src
+
+#+RESULTS:
+: -59231
+: cpu time: 251 real time: 251 gc time: 0
+
+* p28
+#+begin_src scheme
+(define (p28)
+  (define (spiral n)
+    (+ 1
+       (let loop ((add 2)
+                  (state 1))
+         ;; (writeln state)
+         ;; (print state)
+         (if (= state (* n n))
+             0
+             (let ((final-state (+ state (* 4 add))))
+               (+ (apply + (list (+ state add)
+                                 (+ state (* 2 add))
+                                 (+ state (* 3 add))
+                                 final-state))
+                  (loop (+ add 2) final-state)))))))
+  (spiral 1001))
+
+(time (writeln (p28)))
+#+end_src
+
+#+RESULTS:
+: 669171001
+: cpu time: 0 real time: 0 gc time: 0
+* p29
+#+begin_src scheme
+(define (p29)
+  (length
+   (remove-duplicates
+    (let loop ((a-range (range 2 101))
+               (b-range (range 2 101)))
+      (cond ((null? b-range)
+             '())
+            ((null? a-range)
+             ;; (cons (expt (car a-range)
+             ;;             (car b-range)))
+             (loop (range 2 100) (cdr b-range)))
+
+            (else
+             (cons (expt (car a-range)
+                         (car b-range))
+                   (loop (cdr a-range) b-range))))))))
+(time (writeln (p29)))
+#+end_src
+
+#+RESULTS:
+: 9133
+: cpu time: 16 real time: 16 gc time: 0
+* p30
+#+begin_src scheme
+(define (p38)
+  (define (special? n)
+    (= n
+       (apply +
+              (map (curryr expt 5)
+                   (map string->number
+                        (map string
+                             (string->list (number->string n))))))))
+
+  ;; Uh, run this in repl till reasonable
+  (let loop ((n 10))
+    (when (special? n)
+      (writeln n))
+    (loop (+ n 1))))
+#+end_src
+
+#+RESULTS:
+* TODO p31
+* TODO p32
+#+begin_src scheme
+(define (p32)
+  (define get-all-valid
+    (let ((seen (mutable-set)))
+     (lambda (l)
+       (let loop (())))))
+  (let-values (((continues?
+                 next) (in-permutations
+                        '("1" "2" "3" "4" "5" "6" "7" "8" "9"))))
+    (let loop ((p (next))
+               (sum 0))
+      (if (continues?)
+          (loop )
+          sum)))
+
+  ;; somethnig with split-at?
+#+end_src
+* TODO p33
+* SLOW p34
+Only works by printing/examining output and saying "this is good enough"
+#+begin_src scheme
+(let loop ((n 10))
+  (let* ((nstr (number->string n))
+         (lststr (string->list nstr))
+         (factorials
+          (map (compose1 factorial string->number string)
+               lststr)))
+    (if (= (apply + factorials) n)
+        (begin
+          (writeln n)
+          (loop (+ n 1)))
+        (loop (+ n 1)))))
+#+end_src
+* p35
+#+begin_src scheme
+(define (p35)
+  (define (rotations n)
+    (let ((lst (string->list (number->string n))))
+      (define (rotate-one lst)
+        ;; (let ((lst ((compose1 string->list number->string) n)))
+        ;;   (writeln lst))
+        (let-values (((head tail) (split-at lst 1)))
+          (append tail head)))
+      (let loop ((res '())
+                 (r (rotate-one lst)))
+        (if (equal? r lst)
+            res
+            (loop (cons r res) (rotate-one r))))))
+
+  (define (circular-prime? n)
+    (and (prime? n)
+         (andmap (compose1 prime? string->number list->string) (rotations n))))
+
+  (let loop ((count 0)
+             (p (next-prime 1)))
+    (cond ((> p 1000000)
+           count)
+          ((circular-prime? p)
+           (loop (+ count 1) (next-prime p)))
+          (else (loop count (next-prime p))))))
+
+(time (writeln (p35)))
+#+end_src
+
+#+RESULTS:
+: 55
+: cpu time: 438 real time: 438 gc time: 5
+* p36
+#+begin_src scheme
+(define (p36)
+  (let loop ((n 0))
+    (if (> n 1000000)
+        0
+        (+
+         (let ((numstr (number->string n))
+               (binstr (format "~B" n)))
+           (if (and (string=? numstr (string-reverse numstr))
+                    (string=? binstr (string-reverse binstr)))
+               n
+               0))
+         (loop (+ n 1))))))
+
+(time (writeln (p36)))
+#+end_src
+
+#+RESULTS:
+: 872187
+: cpu time: 950 real time: 953 gc time: 17
+* p37
+#+begin_src scheme
+(define (p37)
+  (define (truncatable-prime? n)
+    (if (prime? n)
+        (and
+         (let loop ((n (substring (number->string n) 1)))
+           (cond ((string-null? n)
+                  #t)
+                 ((not (prime? (string->number n)))
+                  #f)
+                 (else
+                  (loop (substring n 1)))))
+         (let loop ((n (substring (string-reverse (number->string n)) 1)))
+           (cond ((string-null? n)
+                  #t)
+                 ((not (prime? (string->number (string-reverse n))))
+                  #f)
+                 (else
+                  (loop (substring n 1))))))
+        #f))
+  (let loop ((n 11)
+             (count 0))
+    (cond ((> count 10)
+           0)
+          ((truncatable-prime? n)
+           (+ n (loop (+ 1 n) (+ 1 count))))
+          (else (loop (+ 1 n) count)))))
+
+(time (writeln (p37)))
+#+end_src
+
+#+RESULTS:
+: 748317
+: cpu time: 230 real time: 231 gc time: 2
+* TODO p38
+* SLOW p39
+#+begin_src scheme
+(define (p39)
+  (define (test-triangle soln a b)
+    (= soln (+ a b (sqrt (+ (expt a 2) (expt b 2))))))
+
+  (define (solve-triangle soln)
+    (let loop ((a 1)
+               (b 1)
+               (seen-a '())
+               (res '()))
+      (cond ((or (member b seen-a)
+                 (= b soln))
+             res)
+            ((= a soln)
+             (loop 1 (+ b 1)
+                   seen-a
+                   res))
+            ((test-triangle soln a b)
+             (loop (+ a 1)
+                   b
+                   (cons a seen-a)
+                   (cons (list a b (sqrt (+ (expt a 2) (expt b 2)))) res)))
+            (else
+             (loop (+ a 1) b
+                   seen-a
+                   res)))))
+  (let loop ((n 1)
+             (max-num 0)
+             (max-val 0))
+    (if (= n 1001)
+        max-num
+        (let ((len (length (solve-triangle n))))
+          (if (> len max-val)
+              (loop (+ n 1 ) n len)
+              (loop (+ n 1) max-num max-val))))))
+
+
+(time (writeln (p39)))
+#+end_src
+
+#+RESULTS:
+* p40
+#+begin_src scheme
+(define (p40)
+  ;; 222222 was gotten by trial and error. but it's still under a second if we
+  ;; just set the limit to 1000000
+  (let ((big-string (string-join (map number->string (range 1 222222)) "")))
+    (* (string->number (substring big-string 0 1))
+       (string->number (substring big-string 9 10))
+       (string->number (substring big-string 99 100))
+       (string->number (substring big-string 999 1000))
+       (string->number (substring big-string 9999 10000))
+       (string->number (substring big-string 99999 100000))
+       (string->number (substring big-string 999999 1000000)))))
+
+(time (writeln (p40)))
+#+end_src
+
+#+RESULTS:
+: 210
+: cpu time: 120 real time: 120 gc time: 38
+* p41
+#+begin_src scheme
+(define (p41)
+  (define (pandigital? n)
+    (let* ((nlst (map (compose1 string->number string)
+                      (string->list (number->string n))))
+           (len (length nlst)))
+      (let loop ((n 1))
+        (cond ((= n (+ len 1))
+               #t)
+              ((not (member n nlst))
+               #f)
+              (else (loop (+ n 1)))))))
+  ;; ;; SLOW
+  ;; (let loop ((n (next-prime 2143))
+  ;;            (largest 2143))
+  ;;   (cond ((> n 987654321)
+  ;;          largest)
+  ;;         ((and (pandigital? n)
+  ;;               (> n largest))
+  ;;          (writeln n)
+  ;;          (loop (next-prime n) n))
+  ;;         (else (loop (next-prime n) largest))))
+  (define n-pandigital
+    (map (compose1 string->number (curryr string-join ""))
+         (map (curry map number->string)
+              (let loop ((n 2)
+                         (res '()))
+                (if (= n 10)
+                    res
+                    (loop (+ n 1) (append res (permutations (range 1 n)))))))))
+  (apply max (filter prime? n-pandigital)))
+
+(time (writeln (p41)))
+#+end_src
+
+#+RESULTS:
+: 7652413
+: cpu time: 199 real time: 199 gc time: 56
+
+* p42
+#+begin_src scheme
+(define (p42)
+  (define (triangle? n)
+    (integer?
+     (/ (- (sqrt (- 1 (* 4 (* 2 (- n))))) 1) 2)))
+  (define (word-score word)
+    (apply +
+           (map (lambda (n) (- n 64))
+                (map char->integer (string->list word)))))
+
+  (let ((words (file->list "p42-words.txt")))
+    (let loop ((words words)
+               (count 0))
+      (cond ((null? words)
+             count)
+            ((triangle? (word-score (car words)))
+             (loop (cdr words) (+ count 1)))
+            (else (loop (cdr words) count))))))
+
+(time (writeln (p42)))
+#+end_src
+
+#+RESULTS:
+: 162
+: cpu time: 13 real time: 13 gc time: 0
+* p43
+#+begin_src scheme
+(define (p43)
+  (define (special? n)
+    (let ((nstr (number->string n)))
+      (if (< (string-length nstr) 10)
+          #f
+          (and (= 0 (modulo (string->number (substring nstr 1 4)) 2))
+               (= 0 (modulo (string->number (substring nstr 2 5)) 3))
+               (= 0 (modulo (string->number (substring nstr 3 6)) 5))
+               (= 0 (modulo (string->number (substring nstr 4 7)) 7))
+               (= 0 (modulo (string->number (substring nstr 5 8)) 11))
+               (= 0 (modulo (string->number (substring nstr 6 9)) 13))
+               (= 0 (modulo (string->number (substring nstr 7 10)) 17))))))
+
+  (define 9-pandigital
+    (map (compose1 string->number (curryr string-join ""))
+         (map (curry map number->string) (permutations (range 0 10)))))
+
+  (apply + (filter special? 9-pandigital)))
+
+(time (writeln (p43)))
+#+end_src
+
+#+RESULTS:
+: 16695334890
+: cpu time: 20190 real time: 20211 gc time: 10983
+* TODO p44
+* p45
+#+begin_src scheme
+(define (p45)
+  (define (nth-triangle n)
+    (/ (* n (+ n 1)) 2))
+  (define (hexagonal? n)
+    (integer?
+     (/ (+ (sqrt (- 1 (* 4 2 (- n)))) 1) (* 2 2))))
+  (define (pentagonal? n)
+    (integer?
+     (/ (+ (sqrt (- 1 (* 4 3 (* 2 (- n))))) 1) (* 2 3))))
+  (let loop ((n 286))
+    (let ((tri (nth-triangle n)))
+      ;; (print tri)
+      (if (and (pentagonal? tri)
+               (hexagonal? tri))
+          tri
+          (loop (+ n 1))))))
+
+(time (writeln (p45)))
+#+end_src
+
+#+RESULTS:
+: 1533776805
+: cpu time: 19 real time: 19 gc time: 0
+
+* p46
+#+begin_src scheme
+(define (p46)
+  (define (goldbach-composite? n)
+    (let loop ((a 2)
+               (b 1))
+      (cond ((prime? n)
+             #f)
+            ((> b (sqrt (/ n 2)))
+             #f)
+            ((> a n)
+             (loop 2 (+ b 1)))
+            ((= n (+ a (* 2 (expt b 2))))
+             #t)
+
+            (else (loop (next-prime a) b)))))
+  (let loop ((n 9))
+    (if (and (not (prime? n))
+             (not (goldbach-composite? n)))
+        n
+        (loop (+ n 2)))))
+
+(time (writeln (p46)))
+#+end_src
+
+#+RESULTS:
+: 5777
+: cpu time: 5298 real time: 5299 gc time: 10
+* p47
+#+begin_src scheme
+(define (p47)
+  (let loop ((n 647)
+             (lst '()))
+    ;; (when (> (length lst) 1)
+    ;;   (print lst))
+    (let ((fs  (prime-divisors n)))
+      (cond ((= (length lst) 4)
+             ;; (print "SOLN: " lst)
+             (reverse lst))
+            ((not (= (length fs) 4))
+             (loop (+ n 1) '()))
+            ((= (length fs) 4)
+             (loop (+ n 1) (cons n lst)))))))
+
+(time (writeln (p47)))
+#+end_src
+
+#+RESULTS:
+: (134043 134044 134045 134046)
+: cpu time: 626 real time: 626 gc time: 1
+* p48
+#+begin_src scheme
+(define (p48)
+  (string-reverse
+   (substring
+    (string-reverse
+     (number->string
+      (let loop ((n 1))
+        (if (= n 1000)
+            (expt n n)
+            (+ (expt n n) (loop (+ n 1)))))))
+    0
+    10)))
+(time (writeln (p48)))
+#+end_src
+
+#+RESULTS:
+: "9110846700"
+: cpu time: 8 real time: 7 gc time: 0
+* TODO p49
+* TODO p50
+* TODO p51
+* p52
+#+begin_src scheme
+(define (p52)
+  (define (number->charset n)
+    (list->set (string->list (number->string n))))
+  (define (special? n)
+    (let ((s (number->charset n)))
+      (and
+       (equal? s (number->charset (* 2 n)))
+       (equal? s (number->charset (* 3 n)))
+       (equal? s (number->charset (* 4 n)))
+       (equal? s (number->charset (* 5 n)))
+       (equal? s (number->charset (* 6 n))))))
+  (let loop ((n 133))
+    (if (special? n)
+        n
+        (loop (+ n 1)))))
+
+(time (writeln (p52)))
+#+end_src
+
+#+RESULTS:
+: 142857
+: cpu time: 319 real time: 319 gc time: 1
+* p53
+#+begin_src scheme
+(define (p53)
+  (define (binomial-over-million n)
+    (let loop ((r 1)
+               (num 0))
+      (cond ((= r (+ n 1))
+             num)
+            ((> (binomial n r) 1000000)
+             (loop (+ r 1) (+ num 1)))
+            (else
+             (loop (+ r 1) num)))))
+
+  (let loop ((n 1)
+             (count 0))
+    (if (= n 101)
+        count
+        (loop (+ n 1) (+ count (binomial-over-million n))))))
+
+(time (writeln (p53)))
+#+end_src
+
+#+RESULTS:
+: 4075
+: cpu time: 63 real time: 64 gc time: 0
+* TODO p54
+* TODO p55
+* p56
+#+begin_src scheme
+(define (p56)
+  (let loop ((a 99)
+             (b 99))
+    (cond ((= a 0)
+           0)
+          ((= b 0)
+           (loop (- a 1) 100))
+          (else
+           (max (apply
+                 +
+                 (map string->number
+                      (map string
+                           (string->list
+                            (number->string (expt a b))))))
+                (loop a (- b 1)))))))
+
+(time (writeln (p56)))
+#+end_src
+
+#+RESULTS:
+: 972
+: cpu time: 304 real time: 304 gc time: 35
+* p57
+#+begin_src scheme
+(define (p57)
+  (define (nth-expansion n)
+    (+ 1
+       (/ 1
+          (let loop ((n n))
+            (if (= n 0)
+                2
+                (+ 2 (/ 1 (loop (- n 1)))))))))
+  (let loop ((n 1000)
+             (counter 0))
+    (let* ((exp (nth-expansion n))
+           (num-bigger? (> (string-length (number->string (numerator exp)))
+                           (string-length (number->string (denominator exp))))))
+      (cond ((= n 0)
+             counter)
+            ((not num-bigger?)
+             (loop (- n 1) counter))
+            (else (loop (- n 1) (+ counter 1)))))))
+(time (writeln (p57)))
+#+end_src
+
+#+RESULTS:
+: 153
+: cpu time: 141 real time: 140 gc time: 1
+* p58
+#+begin_src scheme
+(define (p58)
+  (define (spiral goal-r)
+    (let loop ((add 2)
+               (mad 1)
+               (state 1)
+               (prime-count 0)
+               (num-count 1)
+               (lst '(1)))
+      (let* ((new-state (+ state (* mad add)))
+             (prime-count (if (prime? new-state)
+                              (+ prime-count 1)
+                              prime-count))
+             (num-count (+ num-count 1))
+             (prime-ratio (/ prime-count num-count)))
+        (if (= mad 4)
+            (if (and (> prime-ratio 0)
+                     (< prime-ratio goal-r))
+                (begin
+                  ;; (print (sqrt new-state))
+                  (sqrt new-state))
+                (loop (+ add 2)
+                      1
+                      new-state
+                      prime-count
+                      num-count
+                      (cons new-state lst)))
+            (loop add
+                  (+ mad 1)
+                  state
+                  prime-count
+                  num-count
+                  (cons new-state lst))))))
+
+  (spiral .1))
+
+(time (writeln (p58)))
+#+end_src
+
+#+RESULTS:
+: 26241
+: cpu time: 287 real time: 288 gc time: 0
+* TODO p59
+* p60
+#+begin_src scheme
+(define (p60)
+  (define (permute-num n)
+    (map (compose1 string->number list->string)
+         (permutations (string->list (number->string n)))))
+  (define (cube? n)
+    (integer? (expt n 1/3)))
+  (define (five-cubes? n)
+    (= 5
+       (count identity
+              (map cube? (permute-num n)))))
+  (let loop ((n 345))
+    (writeln n)
+    (if (five-cubes? (expt n 3))
+        (expt n 3)
+        (loop (+ n 1)))))
+
+(time (writeln (p60)))
+#+end_src
+
+#+RESULTS:
+: expt: contract violation
+:   expected: number?
+:   given: '(125 215 152 512 251 521)
+:   argument position: 1st
+:   other arguments...:
+:    1/3
+:

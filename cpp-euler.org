@@ -1,0 +1,1160 @@
+#+title: Project Euler in C++
+#+todo: TODO SLOW SLOW-ISH | DONE
+#+property: header-args :results output verbatim :flags "-O3"
+
+* DONE p01
+CLOSED: [2018-07-20 Fri 22:42]
+#+begin_src C++
+#include <iostream>
+#include <chrono>
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int sum = 0;
+    for (int i = 3; i < 1000; ++i) {
+        if ((i % 3 == 0) || (i % 5 == 0)){
+            sum += i;
+        }
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << sum << std::endl ;
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 233168
+: 0 ms
+
+* DONE p02
+CLOSED: [2018-07-20 Fri 22:42]
+#+begin_src C++
+#include <iostream>
+#include <chrono>
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int sum = 0;
+    int oldi;
+    for (int i = 1, j = 2; j <= 4000000; oldi = i, i = j, j = oldi + j) {
+        if (j % 2 == 0) {
+            sum += j;
+        }
+    }
+
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << sum << std::endl;
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 4613732
+: 0 ms
+
+* DONE p03
+CLOSED: [2018-07-20 Fri 22:42]
+#+begin_src C++
+#include <iostream>
+#include <chrono>
+#include <cmath>
+#include <boost/multiprecision/miller_rabin.hpp>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+bool probably_prime (int n)  {
+    return boost::multiprecision::miller_rabin_test(n, 40);
+}
+
+int largest_prime_factor (long int n) {
+    int max_factor = 1;
+    for (int i = 1; i < std::sqrt(n); ++i) {
+        if (n % i == 0 && probably_prime(i)) {
+            max_factor = i;
+        }
+    }
+    return max_factor;
+}
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    std::cout << largest_prime_factor(600851475143) << std::endl;
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 6857
+: 9 ms
+
+* DONE p04
+CLOSED: [2018-07-20 Fri 22:42]
+#+begin_src C++
+#include <iostream>
+#include <string>
+#include <algorithm>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+bool is_palindrome(int i) {
+    std::string s = std::to_string(i);
+    std::string sr = s;
+    std::reverse(std::begin(sr),std::end(sr));
+    return s == sr;
+}
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int biggest = 0;
+    for (int i = 999; i > 100; --i) {
+        for (int j = 990; j > 100; --j) {
+            int prod = i * j;
+            if (is_palindrome(prod) && prod > biggest) {
+                biggest = prod;
+            }
+
+        }
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << biggest << std::endl;
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 906609
+: 71 ms
+
+* DONE p05
+CLOSED: [2018-07-20 Fri 22:42]
+#+begin_src C++
+#include <iostream>
+#include <algorithm>
+// #include <boost/math/common_factor.hpp>
+
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+long gcd(long a, long b) {
+    long big = std::max(a,b);
+    long smol = std::min(a,b);
+    long mod = big % smol;
+    if (mod == 0) {
+        return smol;
+    }
+    else {
+        return gcd(smol, mod);
+    }
+}
+
+long lcm (long a, long b) {
+    return labs(a * b) / gcd(a,b);
+}
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    // std::cout  << boost::math::lcm(1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+    //                                11,12,13,14,15,16,17,18,19,20);
+    long currlcm = 1;
+    for (long i = 2; i <= 20; ++i) {
+        currlcm = lcm(i,currlcm);
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << currlcm << std::endl;
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 232792560
+: 0 ms
+
+* DONE p06
+CLOSED: [2018-07-20 Fri 22:42]
+#+begin_src C++
+#include <iostream>
+
+int main () {
+    long sum_of_squares = 0;
+    long square_of_sum = 0;
+    for (long i = 1; i <= 100; ++i) {
+        sum_of_squares += i * i;
+        square_of_sum += i;
+    }
+    square_of_sum *= square_of_sum;
+    std::cout << square_of_sum - sum_of_squares << std::endl;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 25164150
+
+* DONE p07
+CLOSED: [2018-07-23 Mon 13:51]
+#+begin_src C++
+#include <iostream>
+#include <chrono>
+#include <boost/multiprecision/miller_rabin.hpp>
+#include <cmath>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+bool small_prime(int x) {
+    if (x <= 1 ) { return false; }
+    else if (x <= 3) { return true; }
+    else if (x % 2 == 0 || x % 3 == 0) { return false; }
+    else {
+        int i = 5;
+        while (true) {
+            if (std::pow(i,2) > x) {
+                return true;
+            }
+            else if (x % i == 0 || x % (i + 2) == 0) {
+                return false;
+            }
+            ++i;
+        }
+    }
+}
+
+bool probably_prime (int n)  {
+    return boost::multiprecision::miller_rabin_test(n, 24);
+}
+
+bool is_prime(int n) {
+    // At what point is miller-rabin faster? I can't tell.
+    if (n > 4000000) {
+        return probably_prime(n);
+    }
+    else {
+        return small_prime(n);
+    }
+}
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int nth_prime = 1;
+    int x = 2;
+    while (nth_prime < 10001) {
+        if (is_prime(x + 1)) {
+            ++nth_prime;
+        }
+        ++x;
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << x << '\n';
+    std::cout << duration << " ms"  << '\n' ;
+    return 0;
+}
+
+#+end_src
+
+#+RESULTS:
+: 104743
+: 16 ms
+
+* DONE p08
+CLOSED: [2018-07-20 Fri 22:42]
+#+begin_src C++
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int main () {
+    // int num;
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    std::ifstream f("p08-string.txt");
+    std::string heck;
+    std::getline(f, heck);
+    long max = 0;
+    for (int i = 0; i <= heck.length() - 13; ++i) {
+        long localprod = 1;
+        for (int j = i; j <= i + 12; ++j) {
+            int digit = heck[j] - '0';
+            // std::cout << digit;
+            localprod *= digit;
+        }
+        // std::cout << '\n';
+        // std::cout << localprod << '\n';
+        if (localprod > max) {
+            max = localprod;
+        }
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << max << '\n';
+    std::cout << duration << " ms"  << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 23514624000
+: 0 ms
+
+* TODO p09
+Doesn't work cause sqrt and no doubles and idk
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+
+long C(long a, long b){
+    return a + b + std::sqrt(std::pow(a,2) + std::pow(b,2));
+}
+
+int main() {
+    long a = 0;
+    long b = 0;
+    long c;
+    do {
+        if (b == 1000) {
+            b = 0;
+            ++a;
+        }
+        else  {
+            ++b;
+        }
+        c = C(a,b);
+    } while(a + b + c != 1000);
+    std::cout << a * b * c << '\n';
+    return 0;
+}
+#+end_src
+* DONE p10
+CLOSED: [2018-07-23 Mon 13:59]
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+bool small_prime(int x) {
+    if (x <= 1 ) { return false; }
+    else if (x <= 3) { return true; }
+    else if (x % 2 == 0 || x % 3 == 0) { return false; }
+    else {
+        int i = 5;
+        while (true) {
+            if (std::pow(i,2) > x) {
+                return true;
+            }
+            else if (x % i == 0 || x % (i + 2) == 0) {
+                return false;
+            }
+            ++i;
+        }
+    }
+}
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    long sum = 0;
+    for (int i = 1; i < 2000000; ++i) {
+        if (small_prime(i)) {
+            sum += i;
+        }
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << sum << '\n';
+    std::cout << duration << " ms"  << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 142913828922
+: 846 ms
+
+* TODO p11
+
+* DONE p12
+CLOSED: [2018-07-24 Tue 00:24]
+#+begin_src C++
+#include <cmath>
+#include <iostream>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int num_divisors(int n) {
+    int divisors = 0;
+    for (int i = 1; std::pow(i,2) <= n; ++i) {
+        if (n % i == 0) {
+            if (n / i == i) {
+                ++divisors;
+            }
+            else {
+                divisors += 2;
+            }
+        }
+    }
+    return divisors;
+}
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int num = 1;
+    int tri = 1;
+    while (num_divisors(tri) <= 500) {
+        ++num;
+        tri += num;
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << tri << '\n';
+    std::cout << duration << " ms"  << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 76576500
+: 176 ms
+
+* DONE p13
+CLOSED: [2018-07-24 Tue 00:41]
+#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#include <iostream>
+#include <gmpxx.h>
+#include <fstream>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    std::ifstream f("p13-string.txt");
+    mpz_class sum {0};
+    mpz_class n;
+    while (f >> n) {
+        sum += n;
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << sum.get_str().substr(0,10) << '\n';
+    std::cout << duration << " ms"  << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 5537376230
+: 0 ms
+
+* DONE p14
+CLOSED: [2018-07-24 Tue 01:10]
+#+begin_src C++
+#include <vector>
+#include <iostream>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+long collatz(long x) {
+    long length {1};
+    while (x != 1) {
+        // std::cout << "ADING" << '\n';
+        if (x % 2 == 0) {
+            x /= 2;
+        }
+        else {
+            x = 3*x + 1;
+        }
+        ++length;
+    }
+    return length;
+}
+
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int maxlen = 0;
+    int longest;
+    for (int i = 1; i < 1000000; ++i) {
+        int size = collatz(i);
+        if (size > maxlen) {
+            maxlen = size;
+            longest = i;
+        }
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << longest  <<'\n';
+    std::cout << duration << " ms"  << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 837799
+: 225 ms
+
+* TODO p15
+
+* p16
+#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#include <iostream>
+#include <gmpxx.h>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    mpz_class b {2};
+    mpz_class e {1000};
+    mpz_class res;
+    mpz_pow_ui(res.get_mpz_t(),b.get_mpz_t(),1000);
+    int sum = 0;
+    for (auto c : res.get_str()) {
+        int i = c - '0';
+        sum += i;
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << sum << '\n';
+    std::cout << duration << " ms"  << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 1366
+: 0 ms
+
+* TODO p17
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+
+// int nth_digit(int m, int n) {
+//     return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
+//         / static_cast<int>(std::pow(10, n));
+// }
+
+// std::string wordify_number(int n) {
+//     int i = 0;
+//     std::string res;
+//     while (! std::pow(10,i+1) > n) {
+//         switch (i) {
+//             case 0:
+//                 switch (nth_digit(n, i)) {
+//                     case 1: res += "ten";
+
+//                 }
+//         }
+//     }
+// }
+
+// std::string wordify_number(int n) {
+//     std::string word {""};
+//     std::string s {std::to_string(n)};
+//     std::reverse(s.begin(),s.end());
+//     for (int i = 0; i < s.length(); ++i) {
+//         if
+//             }
+// }
+
+int main () {
+    std::cout << "hi" << '\n';
+    std::cout << nth_digit(112,1) << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+
+* TODO p18
+
+* DONE p19
+CLOSED: [2018-07-27 Fri 19:58]
+#+begin_src C++
+#include <ctime>
+#include <typeinfo>
+#include <iostream>
+#include <vector>
+
+int main () {
+    struct tm start_tm {0};
+    strptime("1901-01-01","%Y-%m-%d",&start_tm);
+    struct tm end_tm {0};
+    strptime("2000-12-31","%Y-%m-%d",&end_tm);
+    time_t end_seconds {mktime(&end_tm)};
+    int num_sundays = 0;
+    std::vector<std::string> days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+    for (time_t s {mktime(&start_tm)}; s < end_seconds; s += 60*60*24) {
+        struct tm *curr_tm {localtime(&s)};
+        if (curr_tm->tm_wday == 0 && curr_tm->tm_mday == 1) {
+            num_sundays += 1;
+        }
+    }
+    std::cout << num_sundays << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 171
+
+* DONE p20
+CLOSED: [2018-07-27 Fri 19:59]
+#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#include <iostream>
+#include <gmpxx.h>
+
+mpz_class factorial(int n) {
+    if (n == 0) {
+        return 1;
+    }
+    mpz_class result {1};
+    for (int i = n; i >= 1;--i) {
+        result *= i;
+    }
+    return result;
+}
+int main () {
+    mpz_class large {factorial(100)};
+    int sum {0};
+    for (const auto elem : large.get_str()) {
+        int i = elem - '0';
+        sum += i;
+    }
+    std::cout << sum << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 648
+
+* DONE p21
+CLOSED: [2018-07-27 Fri 21:17]
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <unordered_set>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int d(int n) {
+    int sum_divisors = 1;
+    for (int i = 2; std::pow(i,2) <= n; ++i) {
+        // std::cout << i << ' ' << std::pow(i,2) << '\n';
+        if (n % i == 0) {
+            if (n % i == 0) {
+                if (n / i == i) {
+                    sum_divisors += i;
+                }
+                else {
+                    // std::cout << i << ' ' << (n/i) << '\n';
+                    sum_divisors += i;
+                    sum_divisors += n / i;
+                }
+            }
+        }
+    }
+    return sum_divisors;
+}
+
+bool is_amicable(int n) {
+    int other {d(n)};
+    if (other != n && d(other) == n)  {
+        return true;
+    }
+    else { return false; }
+}
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int sum_amicable = 0;
+    for (int i = 2; i < 10000; ++i) {
+        if (is_amicable(i)) {
+            sum_amicable += i;
+        }
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << sum_amicable << '\n';
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 31626
+: 5 ms
+
+* DONE p22
+CLOSED: [2018-07-27 Fri 22:05]
+#+begin_src C++
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <string>
+#include <fstream>
+#include <sstream>
+
+std::vector<std::string> split_string(std::string str,char delimiter) {
+    std::vector<std::string> result;
+    std::istringstream iss(str);
+    std::string elem;
+    while (std::getline(iss,elem,delimiter)) {
+        result.push_back(elem);
+    }
+    return result;
+};
+
+void remove_quotes(std::string &a) {
+    a = a.substr(1,a.length() - 2);
+}
+
+int main () {
+    std::string names_str;
+    std::ifstream f("p22-names.txt");
+    std::getline(f,names_str);
+    auto vec {split_string(names_str, ',')};
+    // std::vector<std::string> vec {"\"COLIN\""};
+    std::for_each(vec.begin(),vec.end(),&remove_quotes);
+    std::sort(vec.begin(),vec.end());
+    int i {1};
+    int total_score;
+    for (const auto elem : vec){
+        int sum_letters = 0;
+        for (const auto c : elem) {
+            // std::cout << c << '\n';
+            int char_score = c - 64;
+            sum_letters += char_score;
+        }
+        total_score += sum_letters * i;
+        // std::cout << elem << '\n';
+        ++i;
+    }
+    // std::string that {"\"abc\""};
+    // remove_quotes(that);
+    std::cout << total_score << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 871198282
+
+* p23
+#+begin_src C++
+#include <iostream>
+#include <chrono>
+
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int pdivisor_sum(int n) {
+    int sum_divisors = 1;
+    for (int i = 2; i*i <= n; ++i) {
+        // std::cout << i << ' ' << std::pow(i,2) << '\n';
+        if (n % i == 0) {
+            if (n % i == 0) {
+                if (n / i == i) {
+                    sum_divisors += i;
+                }
+                else {
+                    // std::cout << i << ' ' << (n/i) << '\n';
+                    sum_divisors += i;
+                    sum_divisors += n / i;
+                }
+            }
+        }
+    }
+    return sum_divisors;
+}
+
+bool is_abundant(int n) {
+    return pdivisor_sum(n) > n;
+}
+
+bool is_sum_of_abundant(int n) {
+    for (int i = 12; i <= n/2; ++i) {
+        if (is_abundant(i) && is_abundant(n - i)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int sum = 0;
+    for (int i = 0; i <= 28123; ++i) {
+        if (!is_sum_of_abundant(i)) {
+            sum += i;
+        }
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << sum << '\n';
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 4179871
+: 3460 ms
+
+* DONE p24
+CLOSED: [2018-07-27 Fri 23:02]
+#+begin_src C++
+#include <iostream>
+#include <algorithm>
+#include <array>
+
+int main () {
+    std::array<int,10> ints {0,1,2,3,4,5,6,7,8,9};
+    int i = 1;
+     while (i < 1000000) {
+         std::next_permutation(ints.begin(),ints.end());
+         ++i;
+     }
+     for (const int elem : ints) {
+         std::cout << elem;
+     }
+     std::cout << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 2783915460
+
+* DONE p25
+CLOSED: [2018-07-30 Mon 00:52]
+#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#include <iostream>
+#include <gmpxx.h>
+#include <chrono>
+using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+
+int main () {
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    mpz_class n {2};
+    mpz_class i {1};
+    mpz_class j {1};
+    mpz_class fib;
+    do {
+        fib = i + j;
+        i = j;
+        j = fib;
+        ++n;
+    } while (fib.get_str().length() != 1000);
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << n << '\n';
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 4782
+: 15 ms
+
+* TODO p26
+
+* TODO p27
+
+* TODO p28
+
+* TODO p29
+
+* DONE p30
+CLOSED: [2018-08-02 Thu 10:01]
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+
+
+int sum_of_fifth_powers(int n) {
+    int place = 10;
+    int mod;
+    int sum = 0;
+    do {
+        mod = n % place;
+
+        int lplace = place / 10;
+        int lmod = n % lplace;
+
+        sum += std::pow((mod - lmod)/lplace, 5);
+
+        place *= 10;
+    } while (mod != n);
+    return sum;
+}
+
+int main () {
+    int limit;
+    int i = 0;
+    do {
+        ++i;
+        limit = std::pow(9,5) * i;
+    } while (limit > std::pow(10,i) - 1);
+    // std::cout << limit <<'\n';
+
+    int sum = 0;
+    for (int i = 2; i < limit; ++i) {
+        if (sum_of_fifth_powers(i) == i) {
+            // std::cout << i << '\n';
+            sum += i;
+        }
+    }
+    std::cout << sum << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 443839
+
+* TODO p31
+
+* TODO p32
+
+* TODO p33
+
+* TODO p34
+
+* DONE p35
+CLOSED: [2018-08-06 Mon 18:05]
+#+begin_src C++
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <algorithm>
+
+bool small_prime(int x) {
+    if (x <= 1 ) { return false; }
+    else if (x <= 3) { return true; }
+    else if (x % 2 == 0 || x % 3 == 0) { return false; }
+    else {
+        int i = 5;
+        while (true) {
+            if (std::pow(i,2) > x) {
+                return true;
+            }
+            else if (x % i == 0 || x % (i + 2) == 0) {
+                return false;
+            }
+            ++i;
+        }
+    }
+}
+
+int circular_prime(int x) {
+    std::string s {std::to_string(x)};
+    if (!small_prime(x)) {
+        return 0;
+    }
+    for (int i = 1; i < s.length(); ++i) {
+        std::rotate(s.begin(),s.begin()+1,s.end());
+        // std::cout << s << '\n';
+        if (!small_prime(std::stoi(s))) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int main () {
+    int count = 0;
+    for (int i = 0; i < 1000000; ++i) {
+        count += circular_prime(i);
+    }
+    std::cout << count << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 55
+
+* DONE p36
+CLOSED: [2018-08-07 Tue 07:49]
+#+begin_src C++
+#include <iostream>
+#include <string>
+#include <bitset>
+
+bool bipalindromic (int x) {
+    std::string s { std::to_string(x) };
+    std::string bs {std::bitset<32>(x).to_string()};
+    bs.erase(0,bs.find_first_not_of("0"));
+    // std::cout << bs << '\n';
+    if (s == std::string(s.rbegin(), s.rend())
+        && bs == std::string(bs.rbegin(), bs.rend())) {
+        return true;
+    }
+    return false;
+}
+
+int main () {
+    int sum = 0;
+    for (int i = 0; i < 1000000; ++i) {
+        if (bipalindromic(i)) {
+            sum += i;
+        }
+    }
+    std::cout << sum << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 872187
+
+* DONE p37
+CLOSED: [2018-08-07 Tue 08:07]
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <string>
+#include <chrono>
+
+bool small_prime(int x) {
+    if (x <= 1 ) { return false; }
+    else if (x <= 3) { return true; }
+    else if (x % 2 == 0 || x % 3 == 0) { return false; }
+    else {
+        int i = 5;
+        while (true) {
+            if (std::pow(i,2) > x) {
+                return true;
+            }
+            else if (x % i == 0 || x % (i + 2) == 0) {
+                return false;
+            }
+            ++i;
+        }
+    }
+}
+
+bool truncatable_prime(int x) {
+    if (small_prime(x)) {
+        std::string s {std::to_string(x)};
+        for (int i = 1; i < s.length(); ++i) {
+            if (!small_prime(std::stoi(s.substr(i, s.length())))
+                || !small_prime(std::stoi(s.substr(0, s.length() - i)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+    return false;
+}
+
+int main () {
+    using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int count = 0, sum = 0;
+    int i = 11;
+    while (count != 11) {
+        if (truncatable_prime(i)) {
+            sum += i;
+            ++count;
+        }
+        ++i;
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << sum << '\n';
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 748317
+: 238 ms
+
+* TODO p38
+#+begin_src C++
+#include <vector>
+#include <string>
+#include <iostream>
+
+bool pandigital(int x) {
+    std::string s {std::to_string(x)};
+    if (s.length() != 9) {
+        return false;
+    }
+    for (char i = '1'; i <= '9'; ++i) {
+        if (s.find(i) == s.length()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+int res(int x, std::vector<int> v)  {
+    std::string s;
+    for (auto elem : v) {
+        s += std::to_string(x * elem);
+    }
+    return std::stoi(s);
+}
+
+// bool concat_pandigital(int x, std::vector<int> v) {
+//     std::string s;
+//     for (auto elem : v) {
+//         s += std::to_string(x * elem);
+//     }
+//     std::cout << s << '\n';
+//     return pandigital(s);
+// }
+
+
+int main () {
+    int max = 0;;
+    int i = 1;
+    std::vector<int> v {1,2,3,4,5,6,7,8,9};
+    int r;
+    do {
+        do {
+            r = res(i, v);
+            if (pandigital(r) && r > max) {
+                max = r;
+            }
+            ++i;
+        }
+        while (r < 999999999);
+        v.erase(v.end() - 1);
+    } while (v.size() != 0);
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+
+* p37
+#+begin_src C++
+
+#+end_src

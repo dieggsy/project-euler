@@ -1,6 +1,6 @@
-#!/usr/bin/csc -s
-(use extras
-     srfi-1)
+#!/usr/bin/racket
+#lang scheme/base
+(require srfi/1)
 
 (define (prime? x)
   (cond ((<= x 1) #f)
@@ -15,10 +15,10 @@
                  (else (loop (+ i 6))))))))
 
 (define (p10)
-  (format #t "~a~%"
-          (let loop ((i 2))
-            (if (= i 1999999)
-                0
-                (+ (if (prime? i) i 0) (loop (+ i (if (= i 2) 1 2))))))))
+  (writeln
+   (let loop ((i 2))
+     (if (= i 1999999)
+         0
+         (+ (if (prime? i) i 0) (loop (+ i (if (= i 2) 1 2))))))))
 
 (p10)
