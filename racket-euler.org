@@ -197,7 +197,7 @@
 
 #+RESULTS:
 : 142913828922
-: cpu time: 2771 real time: 2771 gc time: 200
+: cpu time: 2563 real time: 2565 gc time: 4
 
 * p11
 #+begin_src scheme
@@ -395,7 +395,7 @@
 
 #+RESULTS:
 : 21124
-: cpu time: 1 real time: 1 gc time: 0
+: cpu time: 3 real time: 3 gc time: 0
 * TODO p18
 * TODO p19
 * p20

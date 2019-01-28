@@ -1,5 +1,5 @@
 #+title: Project Euler in C++
-#+todo: TODO SLOW SLOW-ISH | DONE
+#+todo: TODO SLOW SLOW-ISH | DONE TECHNICALLY-DONE
 #+property: header-args :results output verbatim :flags "-O3"
 
 * DONE p01
@@ -311,34 +311,31 @@ int main () {
 : 23514624000
 : 0 ms
 
-* TODO p09
+* DONE p09
+CLOSED: [2018-09-05 Wed 22:02]
 Doesn't work cause sqrt and no doubles and idk
 #+begin_src C++
 #include <iostream>
 #include <cmath>
 
-long C(long a, long b){
-    return a + b + std::sqrt(std::pow(a,2) + std::pow(b,2));
-}
-
-int main() {
-    long a = 0;
-    long b = 0;
-    long c;
-    do {
-        if (b == 1000) {
-            b = 0;
-            ++a;
+int main () {
+    for (long a = 1; a <= 332; ++a) {
+        for (long b = a + 1; b <= 499; ++b) {
+            long c_squared = a*a + b*b;
+            if (c_squared == 1000000 - 2000*a - 2000*b + a*a + 2*a*b + b*b) {
+                std::cout << a << ' ' << b << ' ' << std::sqrt(c_squared) << '\n';
+                std::cout << std::fixed << int(a*b*std::sqrt(c_squared))  << '\n';
+                return 0;
+            }
         }
-        else  {
-            ++b;
-        }
-        c = C(a,b);
-    } while(a + b + c != 1000);
-    std::cout << a * b * c << '\n';
+    }
     return 0;
 }
 #+end_src
+
+#+RESULTS:
+: 200 375 425
+: 31875000
 * DONE p10
 CLOSED: [2018-07-23 Mon 13:59]
 #+begin_src C++
@@ -386,7 +383,54 @@ int main () {
 : 142913828922
 : 846 ms
 
-* TODO p11
+* DONE p11
+CLOSED: [2018-09-06 Thu 00:38]
+#+begin_src C++
+#include <iostream>
+#include <eigen3/Eigen/Dense>
+// #include <armadillo>
+#include <fstream>
+
+long local_max(Eigen::Matrix<long,20,20> m, int i, int j) {
+    Eigen::Matrix<long,4,4> subm = m.block(i,j,4,4);
+    return std::max({subm.col(0).prod(),
+                     subm.row(0).prod(),
+                     subm.diagonal().prod(),
+                     subm.rowwise().reverse().diagonal().prod()});
+};
+
+// long local_max(arma::imat m, int i, int j) {
+//     arma::imat subm = m.submat(i,j,i+3,j+3);
+//     std::cout << subm.col(0) << '\n';
+//     return std::min({ arma::prod(subm.col(0)),
+//                       arma::prod(subm.row(0)),
+//                       arma::prod(subm.diag(0)),
+//                       arma::prod(arma::fliplr(subm).diag(0)) });
+// };
+
+int main () {
+    auto m = Eigen::Matrix<long,20,20>();
+    // arma::imat m = arma::imat(20,20);
+    std::ifstream f("p11-matrix.txt");
+    for (int row = 0; row < 20; ++row) {
+        for (int col = 0; col < 20; ++col) {
+            f >> m(row, col);
+        }
+    }
+    long max = 0;
+    // std::cout << m << '\n';
+    for (int i = 0; i <= 16; ++i) {
+        for (int j=0; j <=16; ++j) {
+            max = std::max(max, local_max(m,i,j));
+        }
+    }
+    std::cout << max << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 70600674
 
 * DONE p12
 CLOSED: [2018-07-24 Tue 00:24]
@@ -510,9 +554,13 @@ int main () {
 : 837799
 : 225 ms
 
-* TODO p15
+* TECHNICALLY-DONE p15
+CLOSED: [2018-09-16 Sun 13:54]
 
-* p16
+40 choose 20, why or how I'm not sure - and there must be a way to get to this
+programatically.
+* DONE p16
+CLOSED: [2018-09-06 Thu 01:35]
 #+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
 #include <iostream>
 #include <gmpxx.h>
@@ -543,50 +591,135 @@ int main () {
 : 1366
 : 0 ms
 
-* TODO p17
+* DONE p17
+CLOSED: [2018-09-06 Thu 01:54]
 #+begin_src C++
 #include <iostream>
 #include <cmath>
 #include <algorithm>
 
-// int nth_digit(int m, int n) {
-//     return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
-//         / static_cast<int>(std::pow(10, n));
-// }
+int nth_digit(int m, int n) {
+    return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
+        / static_cast<int>(std::pow(10, n));
+}
 
-// std::string wordify_number(int n) {
-//     int i = 0;
-//     std::string res;
-//     while (! std::pow(10,i+1) > n) {
-//         switch (i) {
-//             case 0:
-//                 switch (nth_digit(n, i)) {
-//                     case 1: res += "ten";
-
-//                 }
-//         }
-//     }
-// }
-
-// std::string wordify_number(int n) {
-//     std::string word {""};
-//     std::string s {std::to_string(n)};
-//     std::reverse(s.begin(),s.end());
-//     for (int i = 0; i < s.length(); ++i) {
-//         if
-//             }
-// }
+std::string wordify_number(int n) {
+    int i = 0;
+    std::string res;
+    while (! (std::pow(10, i) > n)) {
+        int digit = nth_digit(n,i);
+        if (i == 0 && (nth_digit(n,1) == 1)) {
+            switch (digit) {
+                case 0: res.insert(0, "ten"); break;
+                case 1: res.insert(0, "eleven"); break;
+                case 2: res.insert(0, "twelve"); break;
+                case 3: res.insert(0, "thirteen"); break;
+                case 4: res.insert(0, "fourteen"); break;
+                case 5: res.insert(0, "fifteen"); break;
+                case 6: res.insert(0, "sixteen"); break;
+                case 7: res.insert(0, "seventeen"); break;
+                case 8: res.insert(0, "eighteen"); break;
+                case 9: res.insert(0, "nineteen"); break;
+            }
+        }
+        else if (i != 1) {
+            if (i == 2 && digit != 0) {
+                res.insert(0, "hundred");
+            }
+            if (i == 3 && digit != 0) {
+                res.insert(0, "thousand");
+            }
+            switch (digit) {
+                case 0: break;
+                case 1: res.insert(0, "one"); break;
+                case 2: res.insert(0, "two"); break;
+                case 3: res.insert(0, "three"); break;
+                case 4: res.insert(0, "four"); break;
+                case 5: res.insert(0, "five"); break;
+                case 6: res.insert(0, "six"); break;
+                case 7: res.insert(0, "seven"); break;
+                case 8: res.insert(0, "eight"); break;
+                case 9: res.insert(0, "nine"); break;
+            }
+            if (n >= 100 && digit != 0 && nth_digit(n,1) == 0 && i == 0) {
+                res.insert(0, "and");
+            }
+        } else {
+            switch (digit) {
+                case 0: break;
+                case 1: break;
+                case 2: res.insert(0, "twenty"); break;
+                case 3: res.insert(0, "thirty"); break;
+                case 4: res.insert(0, "forty"); break;
+                case 5: res.insert(0, "fifty"); break;
+                case 6: res.insert(0, "sixty"); break;
+                case 7: res.insert(0, "seventy"); break;
+                case 8: res.insert(0, "eighty"); break;
+                case 9: res.insert(0, "ninety"); break;
+            }
+            if (n >= 100 && digit != 0  // && nth_digit(n,2) == 0
+                ) {
+                res.insert(0, "and");
+            }
+        }
+        ++i;
+    }
+    return res;
+}
 
 int main () {
-    std::cout << "hi" << '\n';
-    std::cout << nth_digit(112,1) << '\n';
+    // std::cout << "hi" << '\n';
+    // std::cout << wordify_number(9) << '\n';
+    std::string res;
+    for (int i = 1; i <= 1000; ++i) {
+        std::string word = wordify_number(i);
+        // std::cout << word << '\n';
+        res += word;
+    }
+    std::cout << res.length() << '\n';
     return 0;
 }
 #+end_src
 
 #+RESULTS:
+: 21124
 
-* TODO p18
+* DONE p18
+CLOSED: [2018-09-06 Thu 22:19]
+#+begin_src C++
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+
+typedef std::vector<std::vector<int>> triangle;
+
+
+int main () {
+    triangle v;
+    int a;
+    std::ifstream f("p18-triangle.txt");
+    for (int line = 0; line < 15; ++line) {
+        std::vector<int> l;
+        for (int elem = 0; elem < line + 1; ++elem) {
+            int num;
+            f >> num;
+            l.push_back(num);
+        }
+        v.push_back(l);
+    }
+    for (triangle::reverse_iterator it = v.rbegin() + 1; it < v.rend(); ++it) {
+        for (int i = 0; i < it->size(); ++i) {
+            (*it)[i] += std::max((*std::prev(it))[i],(*std::prev(it))[i+1]);
+        }
+    }
+    std::cout << v[0][0];
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 1074
 
 * DONE p19
 CLOSED: [2018-07-27 Fri 19:58]
@@ -762,7 +895,8 @@ int main () {
 #+RESULTS:
 : 871198282
 
-* p23
+* DONE p23
+CLOSED: [2018-09-06 Thu 01:36]
 #+begin_src C++
 #include <iostream>
 #include <chrono>
@@ -880,6 +1014,22 @@ int main () {
 : 15 ms
 
 * TODO p26
+#+begin_src C++ :flags "-O3 -lgmp -lgmpxx"
+#include <iostream>
+#include <gmpxx.h>
+
+typedef mpq_class fraction;
+typedef mpf_class Float;
+
+int main () {
+    mpf_class f(fraction(1,3), 500);
+    mp_exp_t exp;
+    std::cout << f.get_str(exp) << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
 
 * TODO p27
 
@@ -1154,7 +1304,572 @@ int main () {
 
 #+RESULTS:
 
-* p37
+* DONE p39
+CLOSED: [2018-09-05 Wed 04:27]
 #+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <unordered_set>
+#include <vector>
+#include <array>
+#include <algorithm>
+#include <chrono>
 
+typedef std::array<int,3> soln;
+
+bool test_triangle(int P, int a, int b) {
+    return P == (a + b) + sqrt(a*a + b*b);
+}
+
+std::vector<soln> solve_triangle(int P) {
+    std::unordered_set<int> seen_a;
+    std::vector<soln> res;
+    for (int a=1; a <= 998; ++a) {
+        for (int b = a; b <= 998; ++b) {
+            int c = sqrt(a*a + b*b);
+            if (test_triangle(P, a, b)) {
+                res.push_back(soln{a,b,c});
+            }
+        }
+    }
+    return res;
+}
+
+void print_soln (soln v) {
+    std::cout << "{";
+    for (auto it = v.begin(); it != v.end() - 1; ++it) {
+        std::cout << *it << ' ';
+    }
+    std::cout << *(v.end() - 1) << '}' << '\n';
+}
+
+int main () {
+    using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    int r = 0;
+    std::vector<soln> solutions;
+    int len = 0;
+    for (int i = 4; i <= 1000; ++i) {
+        solutions = solve_triangle(i);
+        if (solutions.size() > len) {
+            len = solutions.size();
+            r = i;
+        }
+    }
+    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
+    std::cout << r << '\n';
+    std::cout << duration << " ms"  << std::endl ;
+    return 0;
+}
 #+end_src
+
+#+RESULTS:
+: 840
+: 3530 ms
+
+* DONE p40
+CLOSED: [2018-09-05 Wed 19:53]
+#+begin_src C++
+#include <iostream>
+#include <string>
+
+int char2int(char c) {
+    int i = c - '0';
+    return i;
+}
+
+int main () {
+    std::string digits;
+    int i = 1;
+    do {
+        digits += std::to_string(i);
+        ++i;
+    } while (digits.length() < 1000000);
+    std::cout << char2int(digits[0])
+        ,* char2int(digits[9])
+        ,* char2int(digits[99])
+        ,* char2int(digits[999])
+        ,* char2int(digits[9999])
+        ,* char2int(digits[99999])
+        ,* char2int(digits[999999])
+              << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 210
+
+* TODO p41
+
+* TODO 49
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+#include <vector>
+#include <array>
+
+bool small_prime(int x) {
+    if (x <= 1 ) { return false; }
+    else if (x <= 3) { return true; }
+    else if (x % 2 == 0 || x % 3 == 0) { return false; }
+    else {
+        int i = 5;
+        while (true) {
+            if (std::pow(i,2) > x) {
+                return true;
+            }
+            else if (x % i == 0 || x % (i + 2) == 0) {
+                return false;
+            }
+            ++i;
+        }
+    }
+}
+
+std::vector<int> num_to_vector(int n) {
+    std::vector<int> v;
+    int i = 1;
+    while (i < n)  {
+        i *= 10;
+        v.insert(v.begin(),(n % i - n % (i / 10)) / (i / 10));
+    }
+    return v;
+}
+
+int vector_to_num(const std::vector<int> &v) {
+    int n = 0;
+    int i = 1;
+    for (auto it = v.rbegin(); it != v.rend(); ++it) {
+        n += (*it) * i;
+        i *= 10;
+    }
+    return n;
+}
+
+std::vector<int> get_prime_permutations(int n) {
+    std::vector<int> v;
+    std::vector<int> a = num_to_vector(n);
+    do {
+        int num = vector_to_num(a);
+        if (small_prime(num)) {
+            v.push_back(vector_to_num(a));
+        }
+    } while (std::next_permutation(a.begin(), a.end()));
+    return v;
+}
+
+int main () {
+    auto v = get_prime_permutations(1478);
+    for (const auto elem : v) {
+        std::cout << elem << '\n';
+    }
+    // for (int i = 1000; i < 10000; ++i) {
+    //     bool special = true;
+    //     std::vector<int> v = get_prime_permutations(i);
+    //     for (auto it = v.begin(); it != v.end(); ++it) {
+    //         //
+    //     }
+    // }
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 1487
+: 1847
+: 4817
+: 4871
+: 7481
+: 7841
+: 8147
+: 8741
+
+* TODO 55
+#+begin_src C++
+#include <iostream>
+
+int nth_digit(int m, int n) {
+    return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
+        / static_cast<int>(std::pow(10, n));
+}
+
+int add_digits(int n) {
+    int pow = 0;
+    int res = 0;
+    while (std::pow(10,pow) <= n) {
+        int digit = nth_digit(n, pow);
+        res += digit*digit;
+        ++pow;
+    }
+    return res;
+}
+
+int main () {
+
+    return 0;
+}
+#+end_src
+* DONE p67
+CLOSED: [2018-09-06 Thu 22:22]
+#+begin_src C++
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+
+typedef std::vector<std::vector<int>> triangle;
+
+
+int main () {
+    triangle v;
+    int a;
+    std::ifstream f("p67-triangle.txt");
+    for (int line = 0; line < 100; ++line) {
+        std::vector<int> l;
+        for (int elem = 0; elem < line + 1; ++elem) {
+            int num;
+            f >> num;
+            l.push_back(num);
+        }
+        v.push_back(l);
+    }
+    for (triangle::reverse_iterator it = v.rbegin() + 1; it < v.rend(); ++it) {
+        for (int i = 0; i < it->size(); ++i) {
+            (*it)[i] += std::max((*std::prev(it))[i],(*std::prev(it))[i+1]);
+        }
+    }
+    std::cout << v[0][0];
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 7273
+
+* TODO 71
+#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#include <iostream>
+#include <set>
+#include <gmpxx.h>
+
+typedef mpq_class fraction;
+
+std::ostream& operator<< (std::ostream &out, const mpq_class &q) {
+    if (q.get_num() != q.get_den())
+        if (q.get_num() % q.get_den() != 0) {
+            out << q.get_num() << "/" << q.get_den();
+        }
+        else {
+            out << mpz_class(q.get_num()/q.get_den());
+        }
+    else {
+        out << 1;
+    }
+    return out;
+}
+
+std::ostream& operator<<(std::ostream &out, const __mpq_struct *s) {
+    out << mpq_class(s);
+    return out;
+}
+
+int main () {
+    std::set<fraction> s;
+    for (int d = 2; d <= 10000; ++d) {
+        for (int n = 1; n < d; ++n) {
+            fraction f{n,d};
+            f.canonicalize();
+            s.insert(f);
+        }
+    }
+    // for (const auto elem : s) {
+    //     std::cout << elem << ' ';
+    // }
+    // std::cout << '\n';
+    // std::cout << *std::prev(s.find(fraction(3,7))) << '\n';
+
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 428/999
+
+* TODO 81
+Similar to 39?
+
+* DONE p92
+CLOSED: [2018-09-06 Thu 23:32]
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <thread>
+#include "/home/dieggsy/src/project-euler/timer.h"
+
+
+int nth_digit(int m, int n) {
+    return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
+        / static_cast<int>(std::pow(10, n));
+}
+
+int add_digits(int n) {
+    int pow = 0;
+    int res = 0;
+    while (std::pow(10,pow) <= n) {
+        int digit = nth_digit(n, pow);
+        res += digit*digit;
+        ++pow;
+    }
+    return res;
+}
+
+bool reaches_89(int n) {
+    int sum;
+    do {
+        sum = add_digits(n);
+        n = sum;
+    } while (sum != 89 && sum != 1);
+    return (sum == 89) ? true : false;
+}
+
+int main () {
+    Timer t;
+    t.start();
+    int reached_count = 0;
+    for (int i = 1; i < 10000000; ++i) {
+        if (reaches_89(i)) {
+            ++reached_count;
+        }
+    }
+    t.print_elapsed();
+    std::cout << reached_count;
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 16866 ms
+: 8581146
+
+* TODO 94
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <array>
+#include "/home/dieggsy/src/project-euler/timer.h"
+
+class AETriangle {
+    long m_perimeter;
+    double m_area;
+    std::array<long, 3> m_sides;
+public:
+    AETriangle() {}
+    AETriangle(long a, int add) {
+        long b = a;
+        long c = a + add;
+        m_sides = {a, b, c};
+        m_perimeter = a + b + c;
+        double s = double(m_perimeter)/2;
+        m_area = std::sqrt(s*(s-a)*(s-b)*(s-c));
+    }
+    long perimeter() {
+        return m_perimeter;
+    }
+    double area() {
+        return m_area;
+    }
+    std::array<long, 3>& sides() {
+        return m_sides;
+    }
+};
+
+int main () {
+    Timer timer;
+    timer.start();
+    AETriangle t;
+    long total = 0;
+    int side_length = 1;
+    do {
+        t = AETriangle(side_length,1);
+        double area = t.area();
+        if (std::trunc(area) == area && area != 0) {
+            // std::array<long,3> &sides = t.sides();
+            // std::cout << sides[0] << ' ' << sides[1] << ' ' << sides[2] << ' ' << t.perimeter()<< ' ' << area;
+            // std::cout << '\n';
+            total += t.perimeter();
+        }
+        ++side_length;
+    } while (t.perimeter() < 1000000000);
+    timer.print_elapsed();
+    std::cout << total << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 1714 ms
+: 156265903712058790
+
+* TODO 112
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+
+long gcd(long a, long b) {
+    long big = std::max(a,b);
+    long smol = std::min(a,b);
+    long mod = big % smol;
+
+    if (mod == 0) {
+        return smol;
+    }
+    else return gcd(smol, mod);
+}
+
+long lcm(long a, long b) {
+    return std::labs(a*b) / gcd(a,b);
+}
+
+class Fraction {
+    long _numerator;
+    long _denominator;
+
+    void simplify() {
+        long d = gcd(_numerator, _denominator);
+        _numerator /= d;
+        _denominator /=d;
+    }
+public:
+    Fraction(long num, long den) {
+        _numerator = num;
+        _denominator = den;
+        simplify();
+    }
+    long numerator () {
+        return _numerator;
+    }
+    long denominator () {
+        return _denominator;
+    }
+
+    friend Fraction operator+(const Fraction f1, const Fraction f2);
+    friend Fraction operator+(const long n, const Fraction f);
+    friend Fraction operator+(const Fraction f, const long n);
+    friend bool operator==(const Fraction f1, const Fraction f2);
+    friend bool operator!=(const Fraction f1, const Fraction f2);
+    friend std::ostream& operator<< (std::ostream &out, const Fraction &fraction);
+};
+
+Fraction operator+(const Fraction f1, const Fraction f2) {
+    long den = lcm(f1._denominator, f2._denominator);
+    long num = f1._numerator * den/f1._denominator + f2._numerator * den/f2._denominator;
+    Fraction result = Fraction(num,den);
+    result.simplify();
+    return result;
+}
+
+Fraction operator+(const long n, const Fraction f) {
+    return f + Fraction(n,1);
+}
+
+Fraction operator+(const Fraction f, const long n) {
+    return n + f;
+}
+
+bool operator==(const Fraction f1, const Fraction f2) {
+    return f1._numerator == f2._numerator && f1._denominator == f2._denominator;
+}
+
+bool operator!=(const Fraction f1, const Fraction f2) {
+    return !(f1 == f2);
+}
+
+std::ostream& operator<< (std::ostream &out, const Fraction &f) {
+    // Since operator<< is a friend of the Point class, we can access Point's members directly.
+    if (f._numerator != f._denominator)
+        if (f._numerator % f._denominator != 0) {
+            out << f._numerator << "/" << f._denominator;
+        }
+        else {
+            out << (f._numerator / f._denominator);
+        }
+    else {
+        out << 1;
+    }
+    return out;
+}
+
+int nth_digit(int m, int n) {
+    return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
+        / static_cast<int>(std::pow(10, n));
+}
+
+bool bouncy(long n) {
+    if (n < 100) {
+        return false;
+    }
+    int i = 1;
+    bool inc = false;
+    bool dec = false;
+
+    while (! (std::pow(10, i) > n)) {
+        // std::cout << nth_digit(n,i)
+        //           << nth_digit(n,i-1)
+        //           << '\n';
+        if (nth_digit(n,i) > nth_digit(n,i-1)) {
+            // std::cout << "INC" << '\n';
+            inc = true;
+        }
+        else if (nth_digit(n,i) <= nth_digit(n,i-1)) {
+            // std::cout << "DEC" << '\n';
+            dec = true;
+        }
+        ++i;
+    }
+    // std::cout << inc << '\n';
+    // std::cout << dec << '\n';
+    return !(inc ^ dec);
+}
+
+
+int main () {
+    long b = 0;
+    long total = 0;
+    long n = 1;
+    do {
+        if (bouncy(n)) {
+                ++b;
+        }
+        ++total;
+    } while(Fraction(b,total) != Fraction(1,2));
+    std::cout << b << ' ' << total;
+    std::cout << Fraction(0,1) << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+
+* SLOW 206
+#+begin_src C++
+#include <iostream>
+#include <regex>
+#include <string>
+
+int main () {
+    long i = 1000000000;
+    std::regex re {"1\\d2\\d3\\d4\\d5\\d6\\d7\\d8\\d9\\d0"};
+    while (!std::regex_match(std::to_string(i*i), re)) {
+        ++i;
+    }
+    std::cout << i << '\n';
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 1
