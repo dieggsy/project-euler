@@ -1,0 +1,60 @@
+;; #lang racket
+
+(define (f a b)
+  (values
+   (quotient a b)
+   (modulo a b)))
+
+(define (recurring-cycle n)
+  (let loop ((num (numerator n))
+             (den (denominator n))
+             (seen '())
+             (digits '()))
+    (let ((rem (modulo num den))
+          (quo (quotient num den)))
+      (cond ((or (zero? rem)
+                 (member rem seen))
+             ;; (cons rem seen)
+             (let* ((seen (cons rem seen))
+                    (digits (cons quo digits))
+                    (len (length (member rem (reverse seen)))))
+               (reverse (take digits (- len 1))))
+             ;; (values
+             ;;  (cons quo digits)
+             ;;  (cons rem seen))
+             )
+            ((zero? quo)
+             (loop (* 10 num) den (cons rem seen) (cons quo digits)))
+            (else
+             (loop (* 10 (- num (* quo den))) den (cons rem seen) (cons quo digits)))))))
+
+(define (cycle-length n)
+  (let loop ((num (numerator n))
+             (den (denominator n))
+             (seen '())
+             (digits '()))
+    (let ((rem (modulo num den))
+          (quo (quotient num den)))
+      (cond ((or (zero? rem)
+                 (member rem seen))
+             (let* ((seen (cons rem seen))
+                    (digits (cons quo digits)))
+               (- (length (member rem (reverse seen))) 1)))
+            ((zero? quo)
+             (loop (* 10 num) den (cons rem seen) (cons quo digits)))
+            (else
+             (loop (* 10 (- num (* quo den))) den (cons rem seen) (cons quo digits)))))))
+
+(let loop ((i 1)
+           (num 0)
+           (r 0))
+  (if (= i 1000)
+      num
+      (let ((cl (cycle-length (/ 1 i))))
+        (loop (+ i 1)
+              (if (> cl r)
+                  i
+                  num)
+              (max cl r)
+              ;; (max r (cycle-length (/ 1 i)))
+              ))))
