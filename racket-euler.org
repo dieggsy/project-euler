@@ -557,10 +557,10 @@ This is wrong ???
          (if (= state (* n n))
              0
              (let ((final-state (+ state (* 4 add))))
-               (+ (apply + (list (+ state add)
-                                 (+ state (* 2 add))
-                                 (+ state (* 3 add))
-                                 final-state))
+               (+ (+ state add)
+                  (+ state (* 2 add))
+                  (+ state (* 3 add))
+                  final-state
                   (loop (+ add 2) final-state)))))))
   (spiral 1001))
 
