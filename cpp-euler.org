@@ -7,21 +7,19 @@
 CLOSED: [2018-07-20 Fri 22:42]
 #+begin_src C++
 #include <iostream>
-#include <chrono>
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int sum = 0;
     for (int i = 3; i < 1000; ++i) {
         if ((i % 3 == 0) || (i % 5 == 0)){
             sum += i;
         }
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << sum << std::endl ;
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
@@ -34,11 +32,11 @@ int main () {
 CLOSED: [2018-07-20 Fri 22:42]
 #+begin_src C++
 #include <iostream>
-#include <chrono>
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int sum = 0;
     int oldi;
     for (int i = 1, j = 2; j <= 4000000; oldi = i, i = j, j = oldi + j) {
@@ -47,10 +45,8 @@ int main () {
         }
     }
 
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << sum << std::endl;
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
@@ -63,31 +59,24 @@ int main () {
 CLOSED: [2018-07-20 Fri 22:42]
 #+begin_src C++
 #include <iostream>
-#include <chrono>
 #include <cmath>
-#include <boost/multiprecision/miller_rabin.hpp>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
-
-bool probably_prime (int n)  {
-    return boost::multiprecision::miller_rabin_test(n, 40);
-}
+#include <timer.h>
+#include <numbers.h>
 
 int largest_prime_factor (long int n) {
     int max_factor = 1;
     for (int i = 1; i < std::sqrt(n); ++i) {
-        if (n % i == 0 && probably_prime(i)) {
+        if (n % i == 0 && small_prime_p(i)) {
             max_factor = i;
         }
     }
     return max_factor;
 }
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     std::cout << largest_prime_factor(600851475143) << std::endl;
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
@@ -100,21 +89,25 @@ int main () {
 CLOSED: [2018-07-20 Fri 22:42]
 #+begin_src C++
 #include <iostream>
-#include <string>
-#include <algorithm>
 #include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <cstdio>
+#include <cstring>
+#include <timer.h>
 
 bool is_palindrome(int i) {
-    std::string s = std::to_string(i);
-    std::string sr = s;
-    std::reverse(std::begin(sr),std::end(sr));
-    return s == sr;
+    char s[10];
+    sprintf(s, "%d", i);
+    for (int i=0,j=strlen(s)-1;j>=0; ++i, --j) {
+        if (s[i] != s[j]) {
+            return false;
+        }
+    }
+    return true;
 }
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int biggest = 0;
     for (int i = 999; i > 100; --i) {
         for (int j = 990; j > 100; --j) {
@@ -125,57 +118,33 @@ int main () {
 
         }
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << biggest << std::endl;
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 906609
-: 71 ms
+: 67 ms
 
 * DONE p05
 CLOSED: [2018-07-20 Fri 22:42]
 #+begin_src C++
 #include <iostream>
 #include <algorithm>
-// #include <boost/math/common_factor.hpp>
-
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
-
-long gcd(long a, long b) {
-    long big = std::max(a,b);
-    long smol = std::min(a,b);
-    long mod = big % smol;
-    if (mod == 0) {
-        return smol;
-    }
-    else {
-        return gcd(smol, mod);
-    }
-}
-
-long lcm (long a, long b) {
-    return labs(a * b) / gcd(a,b);
-}
+#include <numeric>
+#include <timer.h>
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
-    // std::cout  << boost::math::lcm(1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
-    //                                11,12,13,14,15,16,17,18,19,20);
+    Timer timer;
+    timer.start();
     long currlcm = 1;
     for (long i = 2; i <= 20; ++i) {
-        currlcm = lcm(i,currlcm);
+        currlcm = std::lcm(i,currlcm);
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << currlcm << std::endl;
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
@@ -188,8 +157,11 @@ int main () {
 CLOSED: [2018-07-20 Fri 22:42]
 #+begin_src C++
 #include <iostream>
+#include <timer.h>
 
 int main () {
+    Timer timer;
+    timer.start();
     long sum_of_squares = 0;
     long square_of_sum = 0;
     for (long i = 1; i <= 100; ++i) {
@@ -198,69 +170,35 @@ int main () {
     }
     square_of_sum *= square_of_sum;
     std::cout << square_of_sum - sum_of_squares << std::endl;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 25164150
+: 0 ms
 
 * DONE p07
 CLOSED: [2018-07-23 Mon 13:51]
 #+begin_src C++
 #include <iostream>
-#include <chrono>
-#include <boost/multiprecision/miller_rabin.hpp>
-#include <cmath>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
-
-bool small_prime(int x) {
-    if (x <= 1 ) { return false; }
-    else if (x <= 3) { return true; }
-    else if (x % 2 == 0 || x % 3 == 0) { return false; }
-    else {
-        int i = 5;
-        while (true) {
-            if (std::pow(i,2) > x) {
-                return true;
-            }
-            else if (x % i == 0 || x % (i + 2) == 0) {
-                return false;
-            }
-            ++i;
-        }
-    }
-}
-
-bool probably_prime (int n)  {
-    return boost::multiprecision::miller_rabin_test(n, 24);
-}
-
-bool is_prime(int n) {
-    // At what point is miller-rabin faster? I can't tell.
-    if (n > 4000000) {
-        return probably_prime(n);
-    }
-    else {
-        return small_prime(n);
-    }
-}
+#include <timer.h>
+#include <numbers.h>
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int nth_prime = 1;
     int x = 2;
     while (nth_prime < 10001) {
-        if (is_prime(x + 1)) {
+        if (small_prime_p(x + 1)) {
             ++nth_prime;
         }
         ++x;
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << x << '\n';
-    std::cout << duration << " ms"  << '\n' ;
+    timer.print_elapsed();
     return 0;
 }
 
@@ -268,7 +206,7 @@ int main () {
 
 #+RESULTS:
 : 104743
-: 16 ms
+: 18 ms
 
 * DONE p08
 CLOSED: [2018-07-20 Fri 22:42]
@@ -276,13 +214,11 @@ CLOSED: [2018-07-20 Fri 22:42]
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int main () {
-    // int num;
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     std::ifstream f("p08-string.txt");
     std::string heck;
     std::getline(f, heck);
@@ -300,10 +236,8 @@ int main () {
             max = localprod;
         }
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << max << '\n';
-    std::cout << duration << " ms"  << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
@@ -314,18 +248,20 @@ int main () {
 
 * DONE p09
 CLOSED: [2018-09-05 Wed 22:02]
-Doesn't work cause sqrt and no doubles and idk
 #+begin_src C++
 #include <iostream>
 #include <cmath>
+#include <timer.h>
 
 int main () {
+    Timer timer;
+    timer.start();
     for (long a = 1; a <= 332; ++a) {
         for (long b = a + 1; b <= 499; ++b) {
             long c_squared = a*a + b*b;
             if (c_squared == 1000000 - 2000*a - 2000*b + a*a + 2*a*b + b*b) {
-                std::cout << a << ' ' << b << ' ' << std::sqrt(c_squared) << '\n';
                 std::cout << std::fixed << int(a*b*std::sqrt(c_squared))  << '\n';
+                timer.print_elapsed();
                 return 0;
             }
         }
@@ -335,62 +271,42 @@ int main () {
 #+end_src
 
 #+RESULTS:
-: 200 375 425
 : 31875000
+: 0 ms
 * DONE p10
 CLOSED: [2018-07-23 Mon 13:59]
 #+begin_src C++
 #include <iostream>
 #include <cmath>
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
-
-bool small_prime(int x) {
-    if (x <= 1 ) { return false; }
-    else if (x <= 3) { return true; }
-    else if (x % 2 == 0 || x % 3 == 0) { return false; }
-    else {
-        int i = 5;
-        while (true) {
-            if (std::pow(i,2) > x) {
-                return true;
-            }
-            else if (x % i == 0 || x % (i + 2) == 0) {
-                return false;
-            }
-            ++i;
-        }
-    }
-}
+#include <timer.h>
+#include <numbers.h>
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     long sum = 0;
     for (int i = 1; i < 2000000; ++i) {
-        if (small_prime(i)) {
+        if (small_prime_p(i)) {
             sum += i;
         }
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << sum << '\n';
-    std::cout << duration << " ms"  << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 142913828922
-: 846 ms
+: 849 ms
 
 * DONE p11
 CLOSED: [2018-09-06 Thu 00:38]
 #+begin_src C++
 #include <iostream>
 #include <eigen3/Eigen/Dense>
-// #include <armadillo>
 #include <fstream>
+#include <timer.h>
 
 long local_max(Eigen::Matrix<long,20,20> m, int i, int j) {
     Eigen::Matrix<long,4,4> subm = m.block(i,j,4,4);
@@ -400,18 +316,10 @@ long local_max(Eigen::Matrix<long,20,20> m, int i, int j) {
                      subm.rowwise().reverse().diagonal().prod()});
 };
 
-// long local_max(arma::imat m, int i, int j) {
-//     arma::imat subm = m.submat(i,j,i+3,j+3);
-//     std::cout << subm.col(0) << '\n';
-//     return std::min({ arma::prod(subm.col(0)),
-//                       arma::prod(subm.row(0)),
-//                       arma::prod(subm.diag(0)),
-//                       arma::prod(arma::fliplr(subm).diag(0)) });
-// };
-
 int main () {
+    Timer timer;
+    timer.start();
     auto m = Eigen::Matrix<long,20,20>();
-    // arma::imat m = arma::imat(20,20);
     std::ifstream f("p11-matrix.txt");
     for (int row = 0; row < 20; ++row) {
         for (int col = 0; col < 20; ++col) {
@@ -419,28 +327,27 @@ int main () {
         }
     }
     long max = 0;
-    // std::cout << m << '\n';
     for (int i = 0; i <= 16; ++i) {
         for (int j=0; j <=16; ++j) {
             max = std::max(max, local_max(m,i,j));
         }
     }
     std::cout << max << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 70600674
+: 0 ms
 
 * DONE p12
 CLOSED: [2018-07-24 Tue 00:24]
 #+begin_src C++
 #include <cmath>
 #include <iostream>
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int num_divisors(int n) {
     int divisors = 0;
@@ -458,47 +365,43 @@ int num_divisors(int n) {
 }
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int num = 1;
     int tri = 1;
     while (num_divisors(tri) <= 500) {
         ++num;
         tri += num;
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << tri << '\n';
-    std::cout << duration << " ms"  << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 76576500
-: 176 ms
+: 173 ms
 
 * DONE p13
 CLOSED: [2018-07-24 Tue 00:41]
-#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#+begin_src C++ :libs "-lgmpxx -lgmp"
 #include <iostream>
 #include <gmpxx.h>
 #include <fstream>
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     std::ifstream f("p13-string.txt");
     mpz_class sum {0};
     mpz_class n;
     while (f >> n) {
         sum += n;
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << sum.get_str().substr(0,10) << '\n';
-    std::cout << duration << " ms"  << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
@@ -510,11 +413,8 @@ int main () {
 * DONE p14
 CLOSED: [2018-07-24 Tue 01:10]
 #+begin_src C++
-#include <vector>
 #include <iostream>
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 long collatz(long x) {
     long length {1};
@@ -533,7 +433,8 @@ long collatz(long x) {
 
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int maxlen = 0;
     int longest;
     for (int i = 1; i < 1000000; ++i) {
@@ -543,17 +444,15 @@ int main () {
             longest = i;
         }
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << longest  <<'\n';
-    std::cout << duration << " ms"  << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 837799
-: 225 ms
+: 241 ms
 
 * TECHNICALLY-DONE p15
 CLOSED: [2018-09-16 Sun 13:54]
@@ -562,28 +461,23 @@ CLOSED: [2018-09-16 Sun 13:54]
 programatically.
 * DONE p16
 CLOSED: [2018-09-06 Thu 01:35]
-#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#+begin_src C++ :libs "-lgmpxx -lgmp"
 #include <iostream>
 #include <gmpxx.h>
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
-    mpz_class b {2};
-    mpz_class e {1000};
+    Timer timer;
+    timer.start();
     mpz_class res;
-    mpz_pow_ui(res.get_mpz_t(),b.get_mpz_t(),1000);
+    mpz_ui_pow_ui(res.get_mpz_t(),2,1000);
     int sum = 0;
     for (auto c : res.get_str()) {
         int i = c - '0';
         sum += i;
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << sum << '\n';
-    std::cout << duration << " ms"  << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
@@ -598,11 +492,8 @@ CLOSED: [2018-09-06 Thu 01:54]
 #include <iostream>
 #include <cmath>
 #include <algorithm>
-
-int nth_digit(int m, int n) {
-    return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
-        / static_cast<int>(std::pow(10, n));
-}
+#include <timer.h>
+#include <numbers.h>
 
 std::string wordify_number(int n) {
     int i = 0;
@@ -669,21 +560,22 @@ std::string wordify_number(int n) {
 }
 
 int main () {
-    // std::cout << "hi" << '\n';
-    // std::cout << wordify_number(9) << '\n';
+    Timer timer;
+    timer.start();
     std::string res;
     for (int i = 1; i <= 1000; ++i) {
         std::string word = wordify_number(i);
-        // std::cout << word << '\n';
         res += word;
     }
     std::cout << res.length() << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
-: 21124
+: 21113
+: 0 ms
 
 * DONE p18
 CLOSED: [2018-09-06 Thu 22:19]
@@ -692,11 +584,13 @@ CLOSED: [2018-09-06 Thu 22:19]
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <timer.h>
 
 typedef std::vector<std::vector<int>> triangle;
 
-
 int main () {
+    Timer timer;
+    timer.start();
     triangle v;
     int a;
     std::ifstream f("p18-triangle.txt");
@@ -714,13 +608,15 @@ int main () {
             (*it)[i] += std::max((*std::prev(it))[i],(*std::prev(it))[i+1]);
         }
     }
-    std::cout << v[0][0];
+    std::cout << v[0][0] << std::endl;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 1074
+: 0 ms
 
 * DONE p19
 CLOSED: [2018-07-27 Fri 19:58]
@@ -729,8 +625,11 @@ CLOSED: [2018-07-27 Fri 19:58]
 #include <typeinfo>
 #include <iostream>
 #include <vector>
+#include <timer.h>
 
 int main () {
+    Timer timer;
+    timer.start();
     struct tm start_tm {0};
     strptime("1901-01-01","%Y-%m-%d",&start_tm);
     struct tm end_tm {0};
@@ -744,19 +643,23 @@ int main () {
             num_sundays += 1;
         }
     }
-    std::cout << num_sundays << '\n';
+    std::cout << num_sundays << std::endl;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 171
+: 44 ms
 
 * DONE p20
 CLOSED: [2018-07-27 Fri 19:59]
-#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#+begin_src C++ :libs "-O3 -lgmpxx -lgmp"
 #include <iostream>
 #include <gmpxx.h>
+#include <numbers.h>
+#include <timer.h>
 
 mpz_class factorial(int n) {
     if (n == 0) {
@@ -768,7 +671,10 @@ mpz_class factorial(int n) {
     }
     return result;
 }
+
 int main () {
+    Timer timer;
+    timer.start();
     mpz_class large {factorial(100)};
     int sum {0};
     for (const auto elem : large.get_str()) {
@@ -776,34 +682,31 @@ int main () {
         sum += i;
     }
     std::cout << sum << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 648
+: 0 ms
 
 * DONE p21
 CLOSED: [2018-07-27 Fri 21:17]
 #+begin_src C++
 #include <iostream>
 #include <cmath>
-#include <unordered_set>
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int d(int n) {
     int sum_divisors = 1;
     for (int i = 2; std::pow(i,2) <= n; ++i) {
-        // std::cout << i << ' ' << std::pow(i,2) << '\n';
         if (n % i == 0) {
             if (n % i == 0) {
                 if (n / i == i) {
                     sum_divisors += i;
                 }
                 else {
-                    // std::cout << i << ' ' << (n/i) << '\n';
                     sum_divisors += i;
                     sum_divisors += n / i;
                 }
@@ -822,24 +725,23 @@ bool is_amicable(int n) {
 }
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int sum_amicable = 0;
     for (int i = 2; i < 10000; ++i) {
         if (is_amicable(i)) {
             sum_amicable += i;
         }
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << sum_amicable << '\n';
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 31626
-: 5 ms
+: 6 ms
 
 * DONE p22
 CLOSED: [2018-07-27 Fri 22:05]
@@ -1014,36 +916,171 @@ int main () {
 : 4782
 : 15 ms
 
-* TODO p26
-#+begin_src C++ :flags "-O3 -lgmp -lgmpxx"
+* DONE p26
+CLOSED: [2019-01-29 Tue 11:07]
+#+begin_src C++
 #include <iostream>
-#include <gmpxx.h>
+#include <vector>
+#include <algorithm>
+#include <timer.h>
 
-typedef mpq_class fraction;
-typedef mpf_class Float;
+int repeat_length(int num, int den) {
+    std::vector<int> seen;
+    do {
+        int rem = num % den;
+        int quo = num / den;
+        if (rem == 0) {
+            return 0;
+        }
+        auto remainder_ptr = std::find(seen.begin(), seen.end(), rem);
+        if (remainder_ptr != seen.end()) {
+            std::reverse(seen.begin(), seen.end());
+            return remainder_ptr - seen.begin() + 1;
+        } else if (quo == 0) {
+            num *= 10;
+            seen.push_back(rem);
+        } else {
+            num = (num - quo * den) * 10;
+            seen.push_back(rem);
+        }
+    } while (true);
+}
 
 int main () {
-    mpf_class f(fraction(1,3), 500);
-    mp_exp_t exp;
-    std::cout << f.get_str(exp) << '\n';
+    Timer timer;
+    timer.start();
+    int longest = 0;
+    int len, num = 0;
+    for (int d = 1; d < 1000; ++d) {
+        len = repeat_length(1,d);
+        if (len > longest) {
+            longest = len;
+            num = d;
+        }
+    }
+    std::cout << num << std::endl;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
+: 768
+: 7 ms
 
-* TODO p27
+* DONE p27
+CLOSED: [2019-01-29 Tue 11:37]
+#+begin_src C++
+#include <iostream>
+#include <cmath>
+#include <functional>
+#include <numbers.h>
+#include <timer.h>
 
-* TODO p28
+std::function<int (int)> make_f(int a, int b) {
+    return [a,b](int n){return std::pow(n,2) + a * n + b;};
+}
 
-* TODO p29
+int num_consecutive_primes(int a, int b) {
+    std::function<int (int)> f = make_f(a,b);
+    int n=0, primes=0;
+    while(small_prime_p(f(n))) {
+        n+=1;
+        primes+=1;
+    }
+    return primes;
+}
+
+int main () {
+    Timer timer;
+    timer.start();
+    int max_primes = 0;
+    int prod;
+    for(int a = -999; a < 1000; ++a) {
+        for (int b = -1000; b <= 1000; ++b) {
+            int consecutive = num_consecutive_primes(a,b);
+            if (consecutive > max_primes) {
+                max_primes = consecutive;
+                prod = a * b;
+            }
+        }
+    }
+    std::cout << prod << std::endl;
+    timer.print_elapsed();
+}
+#+end_src
+
+#+RESULTS:
+: -59231
+: 85 ms
+
+* DONE p28
+CLOSED: [2019-01-29 Tue 18:22]
+#+begin_src C++
+#include <iostream>
+#include <timer.h>
+
+int spiral(int n) {
+    int add=2, state=1;
+    int sum = 0;
+    while(state != n*n) {
+        // int final_state = state + 4 * add;
+        // std::cout << state << '\n';
+        sum += 4 * state + 10 * add;
+        state = state + 4 * add;
+        add+=2;
+    }
+    return sum+1;
+}
+
+int main() {
+    Timer timer;
+    timer.start();
+    std::cout << spiral(1001) << std::endl;
+    timer.print_elapsed();
+}
+#+end_src
+
+#+RESULTS:
+: 669171001
+: 0 ms
+
+* DONE p29
+CLOSED: [2019-01-29 Tue 18:46]
+#+begin_src C++ :libs "-lgmpxx -lgmp"
+#include <iostream>
+#include <set>
+#include <gmpxx.h>
+#include <timer.h>
+
+int main() {
+    Timer timer;
+    timer.start();
+    int a,b;
+    std::set<mpz_class> terms;
+    mpz_class res;
+    for(a = 2; a <= 100; ++a) {
+        for (b = 2; b <= 100; ++b) {
+            mpz_ui_pow_ui(res.get_mpz_t(),a,b);
+            terms.insert(res);
+        }
+    }
+    std::cout << terms.size() << std::endl;
+    timer.print_elapsed();
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 9183
+: 5 ms
 
 * DONE p30
 CLOSED: [2018-08-02 Thu 10:01]
 #+begin_src C++
 #include <iostream>
 #include <cmath>
-
+#include <timer.h>
 
 int sum_of_fifth_powers(int n) {
     int place = 10;
@@ -1063,6 +1100,8 @@ int sum_of_fifth_powers(int n) {
 }
 
 int main () {
+    Timer timer;
+    timer.start();
     int limit;
     int i = 0;
     do {
@@ -1079,12 +1118,14 @@ int main () {
         }
     }
     std::cout << sum << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 443839
+: 23 ms
 
 * TODO p31
 
@@ -1093,42 +1134,29 @@ int main () {
 * TODO p33
 
 * TODO p34
+See racket-euler - initially solved by inspection, later got a hint about limit.
+#+begin_src C++ :libs "-lgsl"
+#include <iostream>
 
+
+#+end_src
 * DONE p35
 CLOSED: [2018-08-06 Mon 18:05]
 #+begin_src C++
 #include <iostream>
 #include <string>
-#include <cmath>
 #include <algorithm>
-
-bool small_prime(int x) {
-    if (x <= 1 ) { return false; }
-    else if (x <= 3) { return true; }
-    else if (x % 2 == 0 || x % 3 == 0) { return false; }
-    else {
-        int i = 5;
-        while (true) {
-            if (std::pow(i,2) > x) {
-                return true;
-            }
-            else if (x % i == 0 || x % (i + 2) == 0) {
-                return false;
-            }
-            ++i;
-        }
-    }
-}
+#include <numbers.h>
+#include <timer.h>
 
 int circular_prime(int x) {
     std::string s {std::to_string(x)};
-    if (!small_prime(x)) {
+    if (!small_prime_p(x)) {
         return 0;
     }
     for (int i = 1; i < s.length(); ++i) {
         std::rotate(s.begin(),s.begin()+1,s.end());
-        // std::cout << s << '\n';
-        if (!small_prime(std::stoi(s))) {
+        if (!small_prime_p(std::stoi(s))) {
             return 0;
         }
     }
@@ -1136,17 +1164,21 @@ int circular_prime(int x) {
 }
 
 int main () {
+    Timer timer;
+    timer.start();
     int count = 0;
     for (int i = 0; i < 1000000; ++i) {
         count += circular_prime(i);
     }
     std::cout << count << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 55
+: 465 ms
 
 * DONE p36
 CLOSED: [2018-08-07 Tue 07:49]
@@ -1154,6 +1186,7 @@ CLOSED: [2018-08-07 Tue 07:49]
 #include <iostream>
 #include <string>
 #include <bitset>
+#include <timer.h>
 
 bool bipalindromic (int x) {
     std::string s { std::to_string(x) };
@@ -1168,6 +1201,8 @@ bool bipalindromic (int x) {
 }
 
 int main () {
+    Timer timer;
+    timer.start();
     int sum = 0;
     for (int i = 0; i < 1000000; ++i) {
         if (bipalindromic(i)) {
@@ -1175,12 +1210,14 @@ int main () {
         }
     }
     std::cout << sum << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 872187
+: 199 ms
 
 * DONE p37
 CLOSED: [2018-08-07 Tue 08:07]
@@ -1188,32 +1225,15 @@ CLOSED: [2018-08-07 Tue 08:07]
 #include <iostream>
 #include <cmath>
 #include <string>
-#include <chrono>
-
-bool small_prime(int x) {
-    if (x <= 1 ) { return false; }
-    else if (x <= 3) { return true; }
-    else if (x % 2 == 0 || x % 3 == 0) { return false; }
-    else {
-        int i = 5;
-        while (true) {
-            if (std::pow(i,2) > x) {
-                return true;
-            }
-            else if (x % i == 0 || x % (i + 2) == 0) {
-                return false;
-            }
-            ++i;
-        }
-    }
-}
+#include <numbers.h>
+#include <timer.h>
 
 bool truncatable_prime(int x) {
-    if (small_prime(x)) {
+    if (small_prime_p(x)) {
         std::string s {std::to_string(x)};
         for (int i = 1; i < s.length(); ++i) {
-            if (!small_prime(std::stoi(s.substr(i, s.length())))
-                || !small_prime(std::stoi(s.substr(0, s.length() - i)))) {
+            if (!small_prime_p(std::stoi(s.substr(i, s.length())))
+                || !small_prime_p(std::stoi(s.substr(0, s.length() - i)))) {
                 return false;
             }
         }
@@ -1223,8 +1243,8 @@ bool truncatable_prime(int x) {
 }
 
 int main () {
-    using std::chrono::high_resolution_clock, std::chrono::duration_cast;
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int count = 0, sum = 0;
     int i = 11;
     while (count != 11) {
@@ -1234,17 +1254,15 @@ int main () {
         }
         ++i;
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << sum << '\n';
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 748317
-: 238 ms
+: 246 ms
 
 * TODO p38
 #+begin_src C++
@@ -1310,11 +1328,10 @@ CLOSED: [2018-09-05 Wed 04:27]
 #+begin_src C++
 #include <iostream>
 #include <cmath>
-#include <unordered_set>
 #include <vector>
 #include <array>
 #include <algorithm>
-#include <chrono>
+#include <timer.h>
 
 typedef std::array<int,3> soln;
 
@@ -1323,7 +1340,6 @@ bool test_triangle(int P, int a, int b) {
 }
 
 std::vector<soln> solve_triangle(int P) {
-    std::unordered_set<int> seen_a;
     std::vector<soln> res;
     for (int a=1; a <= 998; ++a) {
         for (int b = a; b <= 998; ++b) {
@@ -1345,8 +1361,8 @@ void print_soln (soln v) {
 }
 
 int main () {
-    using std::chrono::high_resolution_clock, std::chrono::duration_cast;
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int r = 0;
     std::vector<soln> solutions;
     int len = 0;
@@ -1357,23 +1373,22 @@ int main () {
             r = i;
         }
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << r << '\n';
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 840
-: 3530 ms
+: 896 ms
 
 * DONE p40
 CLOSED: [2018-09-05 Wed 19:53]
 #+begin_src C++
 #include <iostream>
 #include <string>
+#include <timer.h>
 
 int char2int(char c) {
     int i = c - '0';
@@ -1381,6 +1396,8 @@ int char2int(char c) {
 }
 
 int main () {
+    Timer timer;
+    timer.start();
     std::string digits;
     int i = 1;
     do {
@@ -1395,12 +1412,14 @@ int main () {
         ,* char2int(digits[99999])
         ,* char2int(digits[999999])
               << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 210
+: 19 ms
 
 * TODO p41
 
@@ -1491,11 +1510,7 @@ int main () {
 * TODO 55
 #+begin_src C++
 #include <iostream>
-
-int nth_digit(int m, int n) {
-    return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
-        / static_cast<int>(std::pow(10, n));
-}
+#include <numbers.h>
 
 int add_digits(int n) {
     int pow = 0;
@@ -1520,11 +1535,13 @@ CLOSED: [2018-09-06 Thu 22:22]
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <timer.h>
 
 typedef std::vector<std::vector<int>> triangle;
 
-
 int main () {
+    Timer timer;
+    timer.start();
     triangle v;
     int a;
     std::ifstream f("p67-triangle.txt");
@@ -1542,13 +1559,15 @@ int main () {
             (*it)[i] += std::max((*std::prev(it))[i],(*std::prev(it))[i+1]);
         }
     }
-    std::cout << v[0][0];
+    std::cout << v[0][0] << '\n';
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 7273
+: 0 ms
 
 * TODO 71
 #+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
@@ -1608,29 +1627,14 @@ CLOSED: [2018-09-06 Thu 23:32]
 #include <iostream>
 #include <cmath>
 #include <thread>
-#include "/home/dieggsy/src/project-euler/timer.h"
+#include <numbers.h>
+#include <timer.h>
 
-
-int nth_digit(int m, int n) {
-    return ((m % static_cast<int>(std::pow(10,n + 1))) - (m % static_cast<int>(std::pow(10, n))))
-        / static_cast<int>(std::pow(10, n));
-}
-
-int add_digits(int n) {
-    int pow = 0;
-    int res = 0;
-    while (std::pow(10,pow) <= n) {
-        int digit = nth_digit(n, pow);
-        res += digit*digit;
-        ++pow;
-    }
-    return res;
-}
 
 bool reaches_89(int n) {
     int sum;
     do {
-        sum = add_digits(n);
+        sum = digit_sum(n);
         n = sum;
     } while (sum != 89 && sum != 1);
     return (sum == 89) ? true : false;
@@ -1645,8 +1649,8 @@ int main () {
             ++reached_count;
         }
     }
-    t.print_elapsed();
     std::cout << reached_count;
+    t.print_elapsed();
     return 0;
 }
 #+end_src
@@ -1858,19 +1862,55 @@ int main () {
 * SLOW 206
 #+begin_src C++
 #include <iostream>
-#include <regex>
-#include <string>
+#include <cmath>
+// #include <regex>
+// #include <string>
+
+long nth_digit(long m, long n) {
+    return ((m % static_cast<long>(std::pow(10,n + 1))) - (m % static_cast<long>(std::pow(10, n))))
+        / static_cast<long>(std::pow(10, n));
+}
+
+bool meets_criteria_p (long number) {
+    // std::cout << number << std::endl;
+    for (int i=2, j=9; i <= 18; i += 2, --j) {
+        std::cout << number << ' ' << i << ' ' << nth_digit(number,i) << ' ' << j << '\n';
+        // if (nth_digit(number,i) != j) {
+        //     return false;
+        // }
+    }
+    return nth_digit(number,0) == 0;
+}
 
 int main () {
-    long i = 1000000000;
-    std::regex re {"1\\d2\\d3\\d4\\d5\\d6\\d7\\d8\\d9\\d0"};
-    while (!std::regex_match(std::to_string(i*i), re)) {
-        ++i;
-    }
-    std::cout << i << '\n';
+    long i = 1010101010;
+    // long i = 1000000000;
+    // std::regex re {"1\\d2\\d3\\d4\\d5\\d6\\d7\\d8\\d9\\d0"};
+    // while (!std::regex_match(std::to_string(i*i), re)) {
+    //     ++i;
+    // }
+
+    // while(!meets_criteria_p(i*i)) {
+    //     ++i;
+    // }
+    // std::cout << i << '\n';
+    // std::cout << nth_digit(1234,0) << std::endl;
+    std::cout << meets_criteria_p(1929374254627488900) << '\n';
+    // std::cout << nth_digit(1929374254627488900,14);
     return 0;
 }
 #+end_src
 
 #+RESULTS:
-: 1
+#+begin_example
+1929374254627488900 2 9 9
+1929374254627488900 4 8 8
+1929374254627488900 6 7 7
+1929374254627488900 8 6 6
+1929374254627488900 10 5 5
+1929374254627488900 12 4 4
+1929374254627488900 14 2 3
+1929374254627488900 16 2 2
+1929374254627488900 18 1 1
+1
+#+end_example
