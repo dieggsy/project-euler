@@ -1,6 +1,7 @@
 #+title: Project Euler in C++
 #+todo: TODO SLOW SLOW-ISH | DONE TECHNICALLY-DONE
-#+property: header-args :results output verbatim :flags (concat "-Ofast -std=gnu++17 -I" (expand-file-name "."))
+#+property: header-args :results output verbatim
+#+property: header-args+ :flags (concat "-Ofast -std=gnu++17 -I" (expand-file-name "."))
 
 * DONE p01
 CLOSED: [2018-07-20 Fri 22:42]
