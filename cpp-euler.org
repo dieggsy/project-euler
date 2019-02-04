@@ -1122,15 +1122,105 @@ int main () {
 
 * TODO p32
 
-* TODO p33
-
-* TODO p34
-See racket-euler - initially solved by inspection, later got a hint about limit.
-#+begin_src C++ :libs "-lgsl"
+* DONE p33
+CLOSED: [2019-01-30 Wed 12:44]
+#+begin_src C++ :libs "-lgmpxx -lgmp"
 #include <iostream>
+#include <gmpxx.h>
+#include <timer.h>
 
+bool cancels_stupidly (mpq_class &q) {
+    std::string numstr = q.get_num().get_str();
+    std::string denstr = q.get_den().get_str();
+    q.canonicalize();
+    std::string s;
+    for (int i = 0; i < 2; ++i) {
+        auto ind = numstr.find(denstr[i]);
+        if (ind != std::string::npos){
+            s += numstr[(ind == 0 ? 1 : 0)];
+            s += '/';
+            char denchar = denstr[(i == 0? 1 : 0)];
+            // Avoid division by zero
+            if  (denchar == '0') {
+                return false;
+            }
+            s += denchar;
+            mpq_class stupidq (s);
+            stupidq.canonicalize();
+            return (stupidq == q);
+        }
+    }
+    return false;
+}
 
+int main () {
+    Timer timer;
+    timer.start();
+    mpq_class prod(1);
+    for (int a = 10; a < 100; ++a) {
+        for (int b = a+1; b < 100; ++b) {
+            // Exclude trivial
+            if (a % 10 == 0 && b % 10 ==0) {
+                continue;
+            }
+            mpq_class q(a,b);
+            if (cancels_stupidly(q)) {
+                prod *= q;
+            }
+        }
+    }
+    prod.canonicalize();
+    std::cout << prod.get_den() << std::endl;
+    timer.print_elapsed();
+}
 #+end_src
+
+#+RESULTS:
+: 100
+: 1 ms
+
+* DONE p34
+CLOSED: [2019-01-30 Wed 00:10]
+See racket-euler - initially solved by inspection, later got a hint about limit.
+#+begin_src C++ :libs "-lgmpxx -lgmp"
+#include <iostream>
+#include <array>
+#include <gmpxx.h>
+#include <numbers.h>
+#include <timer.h>
+
+mpz_class factorial_digit_sum(int n) {
+    std::array<int,10> fact = {1,1,2,6,24,120,720,5040,40320,362880};
+    int pow = 0;
+    mpz_class res = 0;
+    while (std::pow(10,pow) <= n) {
+        int digit = nth_digit(n, pow);
+        res += fact[digit];
+        ++pow;
+    }
+    return res;
+}
+
+int main () {
+    Timer timer;
+    timer.start();
+    int sum = 0;
+    for (int n = 10; n < 9999999; ++n) {
+        if (factorial_digit_sum(n) == n) {
+            sum +=n;
+        }
+
+    }
+    std::cout << sum << std::endl;
+    timer.print_elapsed();
+    return 0;
+}
+#+end_src
+
+#+RESULTS:
+: 40730
+: 2101 ms
+
 * DONE p35
 CLOSED: [2018-08-06 Mon 18:05]
 #+begin_src C++
