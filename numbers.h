@@ -7,21 +7,18 @@ template <
     typename = std::enable_if<std::is_arithmetic<T>::value>
     >
 bool small_prime_p(T x) {
-    if (x <= 1 ) { return false; }
-    else if (x <= 3) { return true; }
+    if (x <= 3) { return x > 1; }
     else if (x % 2 == 0 || x % 3 == 0) { return false; }
     else {
-        int i = 5;
-        while (true) {
-            if (std::pow(i,2) > x) {
-                return true;
-            }
-            else if (x % i == 0 || x % (i + 2) == 0) {
+        T i = 5;
+        while (i*i <= x) {
+            if (x % i == 0 || x % (i + 2) == 0) {
                 return false;
             }
-            ++i;
+            i+=6;
         }
     }
+    return true;
 }
 
 template <
