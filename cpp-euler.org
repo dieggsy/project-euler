@@ -798,9 +798,7 @@ int main () {
 CLOSED: [2018-09-06 Thu 01:36]
 #+begin_src C++
 #include <iostream>
-#include <chrono>
-
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int pdivisor_sum(int n) {
     int sum_divisors = 1;
@@ -836,17 +834,16 @@ bool is_sum_of_abundant(int n) {
 }
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     int sum = 0;
     for (int i = 0; i <= 28123; ++i) {
         if (!is_sum_of_abundant(i)) {
             sum += i;
         }
     }
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << sum << '\n';
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
@@ -885,11 +882,11 @@ CLOSED: [2018-07-30 Mon 00:52]
 #+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
 #include <iostream>
 #include <gmpxx.h>
-#include <chrono>
-using std::chrono::high_resolution_clock, std::chrono::duration_cast;
+#include <timer.h>
 
 int main () {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    Timer timer;
+    timer.start();
     mpz_class n {2};
     mpz_class i {1};
     mpz_class j {1};
@@ -900,17 +897,15 @@ int main () {
         j = fib;
         ++n;
     } while (fib.get_str().length() != 1000);
-    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-    auto duration =  duration_cast<std::chrono::milliseconds>( t2 - t1 ).count();
     std::cout << n << '\n';
-    std::cout << duration << " ms"  << std::endl ;
+    timer.print_elapsed();
     return 0;
 }
 #+end_src
 
 #+RESULTS:
 : 4782
-: 15 ms
+: 16 ms
 
 * DONE p26
 CLOSED: [2019-01-29 Tue 11:07]
