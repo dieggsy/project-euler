@@ -122,7 +122,7 @@ int main () {
 
 #+RESULTS:
 : 906609
-: 67 ms
+: 9 ms
 
 * DONE p05
 CLOSED: [2018-07-20 Fri 22:42]
@@ -202,7 +202,7 @@ int main () {
 
 #+RESULTS:
 : 104743
-: 18 ms
+: 3 ms
 
 * DONE p08
 CLOSED: [2018-07-20 Fri 22:42]
@@ -294,7 +294,7 @@ int main () {
 
 #+RESULTS:
 : 142913828922
-: 849 ms
+: 160 ms
 
 * DONE p11
 CLOSED: [2018-09-06 Thu 00:38]
@@ -377,7 +377,7 @@ int main () {
 
 #+RESULTS:
 : 76576500
-: 173 ms
+: 171 ms
 
 * DONE p13
 CLOSED: [2018-07-24 Tue 00:41]
@@ -448,7 +448,7 @@ int main () {
 
 #+RESULTS:
 : 837799
-: 241 ms
+: 235 ms
 
 * TECHNICALLY-DONE p15
 CLOSED: [2018-09-16 Sun 13:54]
@@ -850,7 +850,7 @@ int main () {
 
 #+RESULTS:
 : 4179871
-: 3460 ms
+: 3708 ms
 
 * DONE p24
 CLOSED: [2018-07-27 Fri 23:02]
@@ -879,7 +879,7 @@ int main () {
 
 * DONE p25
 CLOSED: [2018-07-30 Mon 00:52]
-#+begin_src C++ :flags "-O3 -lgmpxx -lgmp"
+#+begin_src C++ :libs "-lgmpxx -lgmp"
 #include <iostream>
 #include <gmpxx.h>
 #include <timer.h>
@@ -1003,7 +1003,7 @@ int main () {
 
 #+RESULTS:
 : -59231
-: 85 ms
+: 54 ms
 
 * DONE p28
 CLOSED: [2019-01-29 Tue 18:22]
@@ -1259,7 +1259,7 @@ int main () {
 
 #+RESULTS:
 : 55
-: 465 ms
+: 147 ms
 
 * DONE p36
 CLOSED: [2018-08-07 Tue 07:49]
@@ -1343,7 +1343,7 @@ int main () {
 
 #+RESULTS:
 : 748317
-: 246 ms
+: 58 ms
 
 * DONE p38
 CLOSED: [2019-01-31 Thu 11:17]
@@ -2029,15 +2029,24 @@ CLOSED: [2018-09-06 Thu 23:32]
 #+begin_src C++
 #include <iostream>
 #include <cmath>
-#include <thread>
 #include <numbers.h>
 #include <timer.h>
 
+int digit_square_sum(int n) {
+    int pow = 0;
+    int res = 0;
+    while (std::pow(10,pow) <= n) {
+        int digit = nth_digit(n, pow);
+        res += digit*digit;
+        ++pow;
+    }
+    return res;
+}
 
 bool reaches_89(int n) {
     int sum;
     do {
-        sum = digit_sum(n);
+        sum = digit_square_sum(n);
         n = sum;
     } while (sum != 89 && sum != 1);
     return (sum == 89) ? true : false;
@@ -2126,28 +2135,14 @@ int main () {
 #include <iostream>
 #include <cmath>
 #include <algorithm>
-
-long gcd(long a, long b) {
-    long big = std::max(a,b);
-    long smol = std::min(a,b);
-    long mod = big % smol;
-
-    if (mod == 0) {
-        return smol;
-    }
-    else return gcd(smol, mod);
-}
-
-long lcm(long a, long b) {
-    return std::labs(a*b) / gcd(a,b);
-}
+#include <numeric>
 
 class Fraction {
     long _numerator;
     long _denominator;
 
     void simplify() {
-        long d = gcd(_numerator, _denominator);
+        long d = std::gcd(_numerator, _denominator);
         _numerator /= d;
         _denominator /=d;
     }
@@ -2173,7 +2168,7 @@ public:
 };
 
 Fraction operator+(const Fraction f1, const Fraction f2) {
-    long den = lcm(f1._denominator, f2._denominator);
+    long den = std::lcm(f1._denominator, f2._denominator);
     long num = f1._numerator * den/f1._denominator + f2._numerator * den/f2._denominator;
     Fraction result = Fraction(num,den);
     result.simplify();
