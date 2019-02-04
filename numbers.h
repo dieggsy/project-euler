@@ -39,7 +39,7 @@ T digit_sum(T n) {
     T res = 0;
     while (std::pow(10,pow) <= n) {
         T digit = nth_digit(n, pow);
-        res += digit*digit;
+        res += digit;
         ++pow;
     }
     return res;
