@@ -1345,64 +1345,53 @@ int main () {
 : 748317
 : 246 ms
 
-* TODO p38
+* DONE p38
+CLOSED: [2019-01-31 Thu 11:17]
 #+begin_src C++
-#include <vector>
-#include <string>
 #include <iostream>
+#include <string>
+#include <algorithm>
+#include <timer.h>
 
-bool pandigital(int x) {
-    std::string s {std::to_string(x)};
-    if (s.length() != 9) {
-        return false;
-    }
-    for (char i = '1'; i <= '9'; ++i) {
-        if (s.find(i) == s.length()) {
-            return false;
-        }
-    }
-    return true;
-}
-
-int res(int x, std::vector<int> v)  {
-    std::string s;
-    for (auto elem : v) {
-        s += std::to_string(x * elem);
-    }
-    return std::stoi(s);
-}
-
-// bool concat_pandigital(int x, std::vector<int> v) {
-//     std::string s;
-//     for (auto elem : v) {
-//         s += std::to_string(x * elem);
-//     }
-//     std::cout << s << '\n';
-//     return pandigital(s);
-// }
-
-
-int main () {
-    int max = 0;;
+bool special(int n) {
+    std::string s = std::to_string(n);
+    std::string tmp, res;
     int i = 1;
-    std::vector<int> v {1,2,3,4,5,6,7,8,9};
-    int r;
     do {
-        do {
-            r = res(i, v);
-            if (pandigital(r) && r > max) {
-                max = r;
-            }
-            ++i;
+        tmp = s.substr(0,i);
+        int num = std::stoi(tmp);
+        int j = 2;
+        res = tmp;
+        while(std::stol(res) < n) {
+            res += std::to_string(j*num);
+            ++j;
         }
-        while (r < 999999999);
-        v.erase(v.end() - 1);
-    } while (v.size() != 0);
+        if (std::stol(res) == n) {
+            return true;
+        }
+        ++i;
+    } while(std::stol(res) != n && i <= 4);
+    return false;
+}
+
+int main() {
+    Timer timer;
+    timer.start();
+    std::string pan = "987654321";
+    do {
+        if (special(std::stol(pan))) {
+            std::cout << pan << std::endl;
+            timer.print_elapsed();
+            return 0;
+        }
+    } while (std::prev_permutation(pan.begin(),pan.end()));
     return 0;
 }
 #+end_src
 
 #+RESULTS:
+: 932718654
+: 59 ms
 
 * DONE p39
 CLOSED: [2018-09-05 Wed 04:27]
