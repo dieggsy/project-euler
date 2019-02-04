@@ -59,3 +59,22 @@ T factorial(T n) {
     }
     return result;
 }
+
+template <
+    typename T,
+    typename = std::enable_if<std::is_arithmetic<T>::value>
+    >
+T binomial_coefficient(T n, T k) {
+    if (k > n || k < 0) {
+        return 0;
+    } else if (k == 0 || k == n) {
+        return 1;
+    }
+    k = std::min(k, n - k);
+    T res = 1;
+    for (T i = 1; i <= k; ++i) {
+        res *= (n + 1 - i);
+        res /= i;
+    }
+    return res;
+}
