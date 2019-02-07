@@ -2,11 +2,12 @@ use std::time::Instant;
 use std::fs::File;
 use std::io::prelude::*;
 use ndarray::prelude::*;
+use util::data_file;
 
 fn main() {
     let now = Instant::now();
 
-    let mut file = File::open("p81-matrix.txt").expect("No file");
+    let mut file = File::open(data_file("p81-matrix.txt")).expect("No file");
     let mut matstr = String::new();
     file.read_to_string(&mut matstr).expect("Unable to read");
 

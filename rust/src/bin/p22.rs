@@ -1,11 +1,12 @@
 use std::time::Instant;
 use std::fs::File;
 use std::io::prelude::*;
+use util::data_file;
 
 fn main() {
     let now = Instant::now();
 
-    let mut file = File::open("p22-names.txt").expect("No file");
+    let mut file = File::open(data_file("p22-names.txt")).expect("No file");
     let mut contents = String::new();
     file.read_to_string(&mut contents).expect("Unable to read");
     let mut resvec = contents

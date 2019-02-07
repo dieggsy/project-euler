@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 numbers = { path = "pkg/numbers" }
+util = { path = "pkg/util" }
 num = "0.2.0"
 slow_primes = "0.1.14"
 rayon = "1.0.3"
