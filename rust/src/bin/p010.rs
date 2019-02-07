@@ -16,7 +16,7 @@ fn main() {
     let is_prime = numbers::euler_sieve(2000000);
 
     let res: u64 = (1u64..2000000).filter(|&n| is_prime[n as usize]).sum();
-    // let res: u64 = (1u64..2000000).filter(|&n| sieve.is_prime(n s usize)).sum();
+    // let res: u64 = (1u64..2000000).filter(|&n| sieve.is_prime(n as usize)).sum();
 
     let elapsed = now.elapsed();
     let ms = elapsed.as_secs()*1000 + elapsed.subsec_millis() as u64;
