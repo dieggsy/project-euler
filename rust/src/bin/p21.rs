@@ -5,7 +5,7 @@ fn main() {
     let now = Instant::now();
 
     fn d(n: u32) -> u32 {
-        1 + (2..=(n as f64).sqrt() as u32)
+        1 + (2..n).take_while(|&i| i.pow(2) <= n)
             .filter(|i| n % i == 0)
             .map(|i| {
                 if n / i == i {
