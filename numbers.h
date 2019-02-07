@@ -2,6 +2,31 @@
 #include <cmath>
 #include <type_traits>
 
+// #include <array>
+// // #include <algorithm>
+
+// static const int NN = 1000; // Very small prime limit
+
+// static constexpr std::array<bool,NN+1> fill_array() {
+//     std::array<bool, NN+1> ps { };
+//     for (auto &elem : ps) {
+//         elem = true;
+//     }
+//     // ps.fill(true);
+//     // std::fill(ps.begin(),ps.end(),true);
+//     ps[0] = false;
+//     ps[1] = false;
+//     for (int n = 2; n <= NN; ++n) {
+//         if (ps[n]) {
+//             for (int m = 2 * n; m <= NN; m+=n) {
+//                 ps[m] = false;
+//             }
+//         }
+//     }
+//     return ps;
+// }
+// static constexpr std::array<bool, NN+1> prime = fill_array();
+
 template <
     typename T,
     typename = std::enable_if<std::is_arithmetic<T>::value>
