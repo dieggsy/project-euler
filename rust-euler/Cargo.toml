@@ -1,0 +1,13 @@
+[package]
+name = "rust-euler"
+version = "0.1.0"
+authors = ["dieggsy <dieggsy@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+numbers = { path = "pkg/numbers" }
+num = "0.2.0"
+slow_primes = "0.1.14"
+rayon = "1.0.3"
+ndarray = "0.12.1"
+rug = "1.3.0"
