@@ -12,22 +12,11 @@ fn main() {
     //     }
     // }
 
-    let mut is_prime = [true;2000000];
-    is_prime[0] = false;
-    is_prime[1] = false;
-    for n in 2..1999999 {
-        if is_prime[n] {
-            for m in (2*n..1999999).step_by(n) {
-                is_prime[m] = false;
-            }
-        }
-    }
+    // let sieve = primal::Sieve::new(2000000);
+    let is_prime = numbers::euler_sieve(2000000);
 
-    // let res = is_prime[10001];
-
-    // let res: u64 = (1u64..2000000).into_par_iter().filter(|&n| small_prime_p(n as u32)).sum();
-    // let res: u64 = (1u64..2000000).filter(|&n| small_prime_p(n as u32)).sum();
     let res: u64 = (1u64..2000000).filter(|&n| is_prime[n as usize]).sum();
+    // let res: u64 = (1u64..2000000).filter(|&n| sieve.is_prime(n s usize)).sum();
 
     let elapsed = now.elapsed();
     let ms = elapsed.as_secs()*1000 + elapsed.subsec_millis() as u64;
