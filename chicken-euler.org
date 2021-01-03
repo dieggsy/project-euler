@@ -1,0 +1,506 @@
+#+title: Project Euler in Chicken Scheme
+#+property: header-args :results output verbatim :session
+
+* [[elisp:(org-babel-execute-subtree)][preamble]]
+** Convenience syntax
+#+begin_src scheme :results silent
+(import compile-file
+        chicken.format
+        chicken.load)
+
+(load-verbose #f)
+
+(define-syntax write-body
+  (syntax-rules ()
+    ((_ file body ...)
+     (call-with-output-file file
+       (lambda (port)
+         (for-each (cut write <> port) '(body ...)))))))
+
+(define-syntax compile
+  (syntax-rules (file: options: module:)
+    ((_ file: filename options: opts body ...)
+     (begin
+       (write-body filename body ...)
+       (compile-file filename options: opts)))
+    ((_ options: opts body ...)
+     (compile file: "/tmp/chicken-euler.scm"
+              options: opts
+              body ...))
+    ((_ module: modname body ...)
+     (let ((filename (format "/tmp/~a.scm" modname)))
+       (write-body filename body ...)
+       (compile-file filename
+                     options: `("-O3" ,(format "-j ~a" modname) "-s")
+                     output-file: (format "~a.so" modname))))
+    ((_ body ...)
+     (compile file: "/tmp/chicken-euler.scm"
+              options: '("-O5")
+              body ...))))
+#+end_src
+
+** Module num
+#+begin_src scheme :results silent
+(compile module: 'num
+         (module num (arithmetic-sum)
+           (import scheme)
+
+           (define (arithmetic-sum first last n)
+             (* n (/ (+ first last) 2)))))
+#+end_src
+
+** extra imports
+#+begin_src scheme :results silent
+(import math.number-theory)
+#+end_src
+
+* p01
+#+begin_src scheme
+(compile
+ (import (only num arithmetic-sum))
+ (define (p01)
+   (define (arithmetic-sum first last n)
+     (* n (/ (+ first last) 2)))
+   (let ((max 999))
+     (+ (arithmetic-sum 3 (* 3 (quotient max 3)) (quotient max 3))
+        (arithmetic-sum 5 (* 5 (quotient max 5)) (quotient max 5))
+        (- (arithmetic-sum 15 (* 15 (quotient max 15)) (quotient max 15))))))
+
+ (time (print (p01))))
+#+end_src
+
+#+RESULTS:
+: 233168
+: 0s CPU time, maximum live heap: 1.02 MiB
+
+* p02
+#+begin_src scheme
+(compile
+ (define (p02)
+   (let loop ((i 1)
+              (j 2)
+              (res 0))
+     (if (>  j 4000000)
+         res
+         (loop j (+ i j) (if (even? j) (+ res j) res)))))
+ (time (print (p02))))
+#+end_src
+
+#+RESULTS:
+: 4613732
+: 0s CPU time, maximum live heap: 1.02 MiB
+
+* p03
+#+begin_src scheme
+(compile
+ (import (only math.number-theory prime-divisors))
+ (time (print (apply max (prime-divisors 600851475143)))))
+#+end_src
+
+#+RESULTS:
+: 6857
+: 0.039s CPU time, 1274/215 mutations (total/tracked), 0/146 GCs (major/minor), maximum live heap: 1.02 MiB
+
+* p04
+#+begin_src scheme
+(compile
+ (import chicken.foreign
+         chicken.fixnum
+         (only srfi-13 string-reverse))
+ (define (palindrome? int)
+   (let ((str (number->string int)))
+     (string=? str (string-reverse str)))
+   ;; (foreign-lambda* bool ((int i))
+   ;;   "int reverse = 0, n = i;"
+   ;;   "while (n != 0) {"
+   ;;   "    reverse *= 10;"
+   ;;   "    reverse = reverse + n % 10;"
+   ;;   "    n /= 10;"
+   ;;   "}"
+   ;;   "C_return (i == reverse);")
+   )
+
+ (define (p04)
+   (let loop ((i 900)
+              (res 0))
+     (let loop1 ((j i)
+                 (res res)
+                 )
+       (let ((prod (fx* i j)))
+         (cond
+          ((fx> i 999)
+           res)
+          ((fx> j 999)
+           (loop (fx+ i 1) res))
+          ((and (palindrome? prod)
+                (fx> prod res))
+           (loop1 (fx+ j 1) prod))
+          (else (loop1 (fx+ j 1) res)))))))
+ (time (print (p04))))
+#+end_src
+
+#+RESULTS:
+: 906609
+: 0.001s CPU time, 0/12 GCs (major/minor), maximum live heap: 1.09 MiB
+
+* p05
+#+begin_src scheme
+(compile
+ (import (only srfi-1 iota))
+ (time (print (foldr lcm (the fixnum 1) (iota 20 2)))))
+#+end_src
+
+#+RESULTS:
+: 232792560
+: 0s CPU time, maximum live heap: 1.08 MiB
+
+* p06
+#+begin_src scheme
+(compile
+ (import (only num arithmetic-sum))
+ (define (p06)
+   (define (sum-of-squares n)
+     (/ (* n (+ n 1) (+ (* 2 n) 1))
+        6))
+   (define (square-of-sum n)
+     (expt (arithmetic-sum 1 n n) 2))
+   (- (square-of-sum 100) (sum-of-squares 100)))
+
+ (time (print (p06))))
+#+end_src
+
+#+RESULTS:
+: 25164150
+: 0s CPU time, maximum live heap: 1.09 MiB
+
+* p07
+#+begin_src scheme
+(compile
+ (import (only math.number-theory nth-prime))
+ (time (print (nth-prime 10000))))
+#+end_src
+
+#+RESULTS:
+: 104743
+: 0.012s CPU time, 594/99 mutations (total/tracked), 0/74 GCs (major/minor), maximum live heap: 1.08 MiB
+
+* p08
+#+begin_src scheme
+(compile
+ (import (only srfi-1 drop take-right drop-right))
+ (define (p08)
+   (define s (string-append
+              "73167176531330624919225119674426574742355349194934"
+              "96983520312774506326239578318016984801869478851843"
+              "85861560789112949495459501737958331952853208805511"
+              "12540698747158523863050715693290963295227443043557"
+              "66896648950445244523161731856403098711121722383113"
+              "62229893423380308135336276614282806444486645238749"
+              "30358907296290491560440772390713810515859307960866"
+              "70172427121883998797908792274921901699720888093776"
+              "65727333001053367881220235421809751254540594752243"
+              "52584907711670556013604839586446706324415722155397"
+              "53697817977846174064955149290862569321978468622482"
+              "83972241375657056057490261407972968652414535100474"
+              "82166370484403199890008895243450658541227588666881"
+              "16427171479924442928230863465674813919123162824586"
+              "17866458359124566529476545682848912883142607690042"
+              "24219022671055626321111109370544217506941658960408"
+              "07198403850962455444362981230987879927244284909188"
+              "84580156166097919133875499200524063689912560717606"
+              "05886116467109405077541002256983155200055935729725"
+              "71636269561882670428252483600823257530420752963450"))
+   (define (char->digit c)
+     (- (char->integer c) 48))
+   (define (windows ls n)
+     (let loop ((ls ls)
+                (res '()))
+       (if (null? (drop ls n))
+           (cons (take-right ls n) res)
+           (loop (drop-right ls 1)
+                 (cons (take-right ls n) res)))))
+   (let* ((digits (map char->digit (string->list s)))
+          (wins (windows digits 13)))
+     (apply max (map (cut apply * <>) wins))))
+
+
+ (time (print (p08))))
+#+end_src
+
+#+RESULTS:
+: 23514624000
+: 0.013s CPU time, 0.002s GC time (major), 3980/782 mutations (total/tracked), 1/54 GCs (major/minor), maximum live heap: 1.02 MiB
+
+* p09
+#+begin_src scheme
+(compile
+ (import chicken.fixnum)
+
+ (define (p09)
+   (define (b a)
+     (/
+      (fx- (expt (fx- 1000 a) 2) (expt a 2))
+      (fx- 2000 (fx* 2 a))))
+
+   (define (c-squared a b)
+     (fx+ (fx* a a) (fx* b b)))
+
+   (let loop ((a 1)
+              (res 0))
+     (let* ((b (b a))
+            (c-2 (c-squared a b)))
+       (cond ((> a 332)
+              'no-solution)
+             ((= c-2 (expt (- 1000 a b) 2))
+              (fx* a (fx* b (sqrt c-2))))
+             (else (loop (+ a 1) res))))))
+
+ (time (print (p09))))
+#+end_src
+
+#+RESULTS:
+: 31875000
+: 0s CPU time, 0/3 GCs (major/minor), maximum live heap: 944.11 KiB
+
+* p10
+#+begin_src scheme
+(compile
+ (import srfi-1
+         chicken.fixnum
+         ;; (only math.number-theory next-prime prime?)
+         )
+ (define (p10)
+   ;; (let loop ((prime 2)
+   ;;            (sum 2))
+   ;;   (if (fx> prime 2000000)
+   ;;       sum
+   ;;       (loop (next-prime prime) (fx+ prime sum))))
+   ;; (let loop ((prime 3)
+   ;;            (sum 2))
+   ;;   (cond ((fx> prime 2000000)
+   ;;          sum)
+   ;;         ((prime? prime)
+   ;;          (loop (fx+ prime 2) (fx+ prime sum)))
+   ;;         (else
+   ;;          (loop (fx+ prime 2) sum))))
+
+   ;; Fixnum sieve solution - waaaay faster
+   (define ps (make-vector 2000001 #t))
+   (define ~ vector-ref)
+   (define ! vector-set!)
+   (! ps 0 #f)
+   (! ps 1 #f)
+   ;; (define sum 0)
+   ;; (do ((n 2 (fx+ n 1)))
+   ;;     ((fx> n 2000000))
+   ;;   (when (~ ps n)
+   ;;     (set! sum (fx+ sum n)))
+   ;;   (do ((m (fx+ n n) (fx+ n m)))
+   ;;       ((fx> m 2000000))
+   ;;     (! ps m #f)))
+   ;; sum
+   (let loop ((n 2)
+              (sum 0))
+     (if (fx> n 2000000)
+         sum
+         (begin
+           (do ((m (fx+ n n) (fx+ n m)))
+               ((fx> m 2000000))
+             (! ps m #f))
+           (loop (fx+ n 1) (if (~ ps n) (fx+ sum n) sum)))
+         ))
+   )
+ (time (print (p10)))
+ )
+#+end_src
+
+#+RESULTS:
+: 142913828922
+: 0.526s CPU time, 0.001s GC time (major), 3/0 mutations (total/tracked), 1/6062 GCs (major/minor), maximum live heap: 724.12 KiB
+
+* p11
+#+begin_src scheme
+(compile
+ options: '("-O5" "-L \"-lgsl -lgslcblas\"")
+
+ (import chicken.foreign
+         chicken.process
+         chicken.process-context
+         bind)
+
+ (bind-options default-renaming: "")
+
+ ;; (foreign-declare "
+ ;; #include \"wrap.h\"
+ ;; ")
+ (foreign-declare "
+#include <string.h>
+#include <gsl/gsl_matrix_int.h>
+#include <gsl/gsl_complex_math.h>
+")
+
+ (define-external (scheme_make_rect (double r) (double i)) scheme-object
+   (make-rectangular r i))
+
+ (bind-opaque-type cfile (c-pointer "FILE"))
+ (bind "cfile fopen(char *, char *)")
+ (bind "int fflush(cfile)")
+ (bind "cfile stdout")
+
+
+ (bind-opaque-type gsl_vector (c-pointer "gsl_vector_int"))
+ (bind "int gsl_vector_int_get(gsl_vector, size_t)")
+
+ (bind-opaque-type matrix (c-pointer "gsl_matrix_int"))
+ (bind "matrix gsl_matrix_int_alloc(size_t, size_t)")
+ ;; (bind-rename "gsl_matrix_int_get" matrix-ref)
+ (bind "int gsl_matrix_int_get(matrix, size_t, size_t)")
+ (bind "int gsl_matrix_int_fscanf(cfile, matrix)")
+ (bind "int gsl_matrix_int_fprintf(cfile, matrix, char *)")
+ ;; (bind "gsl_vector gsl_matrix_diag(matrix);")
+ (bind-file* "wrap.c")
+
+
+ (define f (fopen "data/p11-grid.txt" "r"))
+ (define m (gsl-matrix-int-alloc 20 20))
+ (print (gsl-matrix-int-fscanf f m))
+ (print (stdout))
+ (print (gsl-matrix-int-get m 0 19))
+ (print (gsl-matrix-diag m))
+ )
+#+end_src
+
+#+RESULTS:
+
+* p12
+#+begin_src scheme
+(compile
+ (import (only math.number-theory divisors)
+         chicken.fixnum)
+
+ ;; (: factors (fixnum -> (list-of fixnum)))
+ ;; (define (factors x)
+ ;;   (let* ((root (sqrt x))
+ ;;          (small-fac
+ ;;           (let loop ((num 1))
+ ;;             (cond ((>= num root)
+ ;;                    (if (integer? (/ x num))
+ ;;                        (list num)
+ ;;                        '()))
+ ;;                   ((not (integer? (/ x num)))
+ ;;                    (loop (+ num 1)))
+ ;;                   (else
+ ;;                    (cons num (loop (+ num 1))))))))
+ ;;     (append small-fac (map (lambda (y) (/ x y)) small-fac))))
+
+ (define (p12)
+   (let loop ((num 1)
+              (tri 1)
+              (num-factors 1))
+     (if (fx> num-factors 500)
+         tri
+         (let* ((next (fx+ num 1))
+                (tri-next (fx+ tri next))
+                (num-factors-next (length (divisors tri-next))))
+           (loop next tri-next (fxmax num-factors num-factors-next))))))
+
+ (time (print (p12))))
+#+end_src
+
+#+RESULTS:
+: 76576500
+: 1.422s CPU time, 0.007s GC time (major), 4975304/12696 mutations (total/tracked), 5/20592 GCs (major/minor), maximum live heap: 1.11 MiB
+
+* p14
+#+begin_src scheme
+(compile
+ (import chicken.fixnum)
+ ;; ;; Old
+ ;; (define (collatz x)
+ ;;   (cond ((= x 1)
+ ;;          '(1))
+ ;;         ((even? x)
+ ;;          (cons x (collatz (fx/ x 2))))
+ ;;         (else
+ ;;          (cons x (collatz (fx+ 1 (fx* 3 x)))))))
+
+ ;; (define (p14)
+ ;;   (let loop ((i 999999)
+ ;;              (len (length (collatz 999999)))
+ ;;              (longest 999999))
+ ;;     (if (fx= i 1)
+ ;;         longest
+ ;;         (let* ((i (fx- i 1))
+ ;;                (collatz-len (length (collatz i)))
+ ;;                (next-len (if (fx> collatz-len len) collatz-len len))
+ ;;                (longest (if (fx> collatz-len len) i longest)))
+ ;;           (loop i next-len longest)))))
+ (define (collatz-it n)
+   (cond ((fx= n 1) 1)
+         ((even? n) (fx/ n 2))
+         (else (fx+ 1 (fx* 3 n)))))
+
+ (define (collatz-len x)
+   (let loop ((n x)
+              (len 1))
+      (if (fx= 1 n)
+          len
+          (loop (collatz-it n) (fx+ 1 len)))))
+
+ (define (p14)
+   (let loop ((i 999999)
+              (maxnum 0)
+              (maxlen 0))
+     (if (fx= i 1)
+         maxnum
+         (let ((len (collatz-len i)))
+           (if (fx> len maxlen)
+               (loop (fx- i 1) i len)
+               (loop (fx- i 1) maxnum maxlen))))))
+
+ (time (print (p14))))
+#+end_src
+
+#+RESULTS:
+: 837799
+: 1.596s CPU time, 0/30 GCs (major/minor), maximum live heap: 1.11 MiB
+
+* p23
+currently not working
+#+begin_src scheme
+(compile :options '("-O3")
+ (import (only math.number-theory divisors)
+         chicken.fixnum
+         (only srfi-1 delete filter iota))
+
+ (define (abundant? n)
+   (fx> (fx- (foldr fx+ 0 (divisors n)) n) n))
+
+ (define all (filter abundant? (iota 28124)))
+
+ (define (p23)
+
+   (let outer-loop ((const (car all))
+                    (lst (cdr all)))
+     (if (null? lst)
+         `(,const)
+         (cons const
+               (outer-loop
+                (car lst)
+                ;; delete (+ const const)
+                (let inner-loop ((curr (car lst))
+                                 (rest (cdr lst)))
+                  (if (null? rest)
+                      `(,curr)
+                      (let ((cleaned-lst (delete (fx+ const curr) rest)))
+                        (cons curr (inner-loop (car cleaned-lst)
+                                               (cdr cleaned-lst)))))))))))
+
+ (time (print (p23))))
+#+end_src
+
+#+RESULTS:
+: Error: (#f) "segmentation violation": ()
+: Call history:
+:
+
