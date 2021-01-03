@@ -1,0 +1,5 @@
+- C++: [[./cpp-euler.org]]
+- Rust: [[./rust]]
+- Racket: [[./racket-euler.org]]
+- C: [[./C]]
+- Chicken: [[./chicken-euler.org]]
