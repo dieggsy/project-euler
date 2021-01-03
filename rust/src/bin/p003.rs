@@ -1,6 +1,6 @@
 use std::time::Instant;
 extern crate numbers;
-use crate::numbers::*;
+// use crate::numbers::*;
 use rayon::prelude::*;
 
 fn largest_prime_factor(n: u64) -> u64 {

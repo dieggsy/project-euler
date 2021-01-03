@@ -1,8 +1,15 @@
-extern crate numbers;
-use crate::numbers::*;
+use numbers::*;
+// use rug::Integer;
 
+// use num::Num;
 
 fn main() {
-    let primes = prime_sieve(10);
-    println!("{}",primes[7]);
+    let now = std::time::Instant::now();
+
+    // fn
+
+    let elapsed = now.elapsed();
+    let ms = elapsed.as_secs()*1000 + elapsed.subsec_millis() as u64;
+    println!("{:?}\n{} ms",res,ms)
+
 }
