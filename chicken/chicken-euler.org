@@ -147,7 +147,7 @@
 #+begin_src scheme
 (compile
  (import (only srfi-1 iota))
- (time (print (foldr lcm (the fixnum 1) (iota 20 2)))))
+ (time (print (foldr lcm (the fixnum 1) (iota 19 2)))))
 #+end_src
 
 #+RESULTS:
