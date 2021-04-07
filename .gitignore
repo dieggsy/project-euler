@@ -2,3 +2,4 @@ test.scm
 /bin/
 *.so
 *.import.scm
+/ocaml/_build/

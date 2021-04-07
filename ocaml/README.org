@@ -1,0 +1,13 @@
+#+TITLE: OCaml Project Euler
+
+This is my first adventure into ML languages (besides very minor experiences
+with Haskell and Rust, which borrow concepts from ML) and the first time I try
+to actually solve problems using a statically typed functional language. It's
+kinda neat!
+
+* Running solutions
+You can run a particular problem using e.g.
+#+begin_src sh
+dune exec ./p01.exe
+#+end_src
+
