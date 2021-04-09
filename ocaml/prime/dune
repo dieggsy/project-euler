@@ -1,0 +1,3 @@
+(library (name prime)
+ (modules prime)
+ (libraries bignum zarith))
