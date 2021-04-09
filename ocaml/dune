@@ -1,4 +1,5 @@
 (executables
  (names p01 p02 p04 p05 p06 p08 p10 p11 p32)
- (libraries time base stdio zarith)
+ (libraries time prime
+            base stdio zarith)
  (ocamlopt_flags -O3))
