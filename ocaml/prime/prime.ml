@@ -32,10 +32,6 @@ let miller_rabin n ~iter:k =
   if Z.(equal n one) then false
   else if Z.(equal (logand n one) zero) then false
   else if Z.(equal (n mod ~$3) zero) then false
-  else if Z.(equal (n mod ~$5) zero) then false
-  else if Z.(equal (n mod ~$7) zero) then false
-  else if Z.(equal (n mod ~$11) zero) then false
-  else if Z.(equal (n mod ~$13) zero) then false
   else
     let r, d = get_rd Z.(n - one) in
     let rec loop i bool =
@@ -44,5 +40,7 @@ let miller_rabin n ~iter:k =
     in
     loop 0 true
 
-let is_prime =
-  miller_rabin ~iter:12
+let is_prime n =
+  if Z.(equal n ~$2) then true
+  else if Z.(equal n ~$3) then true
+  else miller_rabin ~iter:12 n
