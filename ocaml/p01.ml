@@ -14,7 +14,6 @@ let iterative () =
   printf "%d\n" (loop 0 0)
 
 let list_based () =
-  let add x y = x + y in
   let is_multiple x =
     if x % 3 = 0 || x % 5 = 0 then true
     else false
@@ -22,7 +21,7 @@ let list_based () =
   let sum =
     List.fold
       (List.filter (List.range 0 1000) ~f:is_multiple)
-      ~f:add ~init:0
+      ~f:(+) ~init:0
   in
   printf "%d\n" sum
 
