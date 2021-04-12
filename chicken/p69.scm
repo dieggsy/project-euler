@@ -1,7 +1,7 @@
 #!/usr/bin/chicken-scheme
 ;; AUTOCOMPILE: -O3
 
-;; This is pretty slow...
+;; TODO: This is pretty slow...
 (import (math number-theory)
         (chicken fixnum)
         (chicken flonum)
