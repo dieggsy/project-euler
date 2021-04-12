@@ -1,0 +1,48 @@
+#!/usr/bin/racket
+;; The following is slow and I arrived at the number 580 by trial and error...
+;; ongoing effort
+#lang racket
+(require math srfi/1 racket/unsafe/ops)
+(define (p50)
+  (define lim #e1e6)
+  (define primes (filter prime? (range 0 lim)))
+  (define (windows ls n)
+    (let loop ((ls ls))
+      (let* ((sum (apply unsafe-fx+ (take ls n)))
+             (yes (and (unsafe-fx< sum lim) (odd? sum) (prime? sum) sum)))
+        (cond (yes yes)
+              ((null? (drop ls n)) #f)
+              (else (loop (drop ls 1)))))))
+  (let loop ((n 580))
+    ;; (display n) (newline)
+    ;; (flush-output)
+    (if (unsafe-fx= n 0)
+        #f
+        (let ((win (windows primes n)))
+          (if win win (loop (unsafe-fx- n 1)))
+          )))
+  ;; (define (primesum primes)
+  ;;   (let loop ((sum 0)
+  ;;              (primes primes)
+  ;;              (len 0)
+  ;;              (prime 0))
+  ;;     (cond ;; ((null? primes)
+  ;;      ;;  (loop 0 (cdr primes)))
+  ;;      ((null? primes) (values len prime))
+  ;;      ((> sum lim) (values len prime))
+  ;;      ((prime? sum)
+  ;;       (loop (+ sum (car primes)) (cdr primes) (+ len 1) sum))
+  ;;      (else (loop (+ sum (car primes)) (cdr primes) (+ len 1)  prime)))))
+
+  ;; (let loop ((primes primes)
+  ;;            (prime 0)
+  ;;            (len 0))
+  ;;   (if (null? primes)
+  ;;       prime
+  ;;       (receive (nlen nprime) (primesum primes)
+  ;;         (if (> nlen len)
+  ;;             (loop (cdr primes) nprime nlen)
+  ;;             (loop (cdr primes) prime len)))))
+  )
+
+(print (p50))
