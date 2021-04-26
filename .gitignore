@@ -1,5 +1,6 @@
 test.scm
 /bin/
+*.fasl
 *.so
 *.import.scm
 /ocaml/_build/
