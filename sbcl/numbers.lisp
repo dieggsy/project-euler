@@ -52,7 +52,8 @@
 (defun miller-rabin (n k)
   "Test N for primality by performing the Miller-Rabin test K times.
   Return NIL if N is composite, and T if N is probably prime."
-  (cond ((= n 1)   nil)
+  (cond ((zerop n) nil)
+        ((= n 1)   nil)
         ((< n 4)     t)
         ((evenp n) nil)
         (t
